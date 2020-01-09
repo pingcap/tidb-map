@@ -119,3 +119,13 @@
 
 ## 6. 生态 tools 问题
 
+### 6.1 binlog 问题
+
+#### 6.1.1 Kafka 相关问题
+
+- 因为 Kafka 客户端版本设置问题，导致 Drainer 写 Kafka 报错，见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
+- 因为 binlog 太大，导致写 Kafka 报错，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
+
+### 6.2 DM 问题
+
+### 6.3 lightning 问题
