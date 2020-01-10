@@ -123,11 +123,11 @@
 
 #### 6.1.1 Drainer 中的 sarama 报 EOF 错误
 
-- Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
+- Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，需要修改配置 `kafka-version`, 见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
 
-#### 6.1.2 Drainer 写 Kafka 报错并 panic 退出
+#### 6.1.2 Drainer 写 kafka 失败然后 panic，kafka 报 Message was too large 错误
 
-- binlog 数据太大，造成写 Kafka 的单条消息太大，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
+- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
 
 ### 6.2 DM 问题
 
