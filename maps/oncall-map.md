@@ -121,10 +121,13 @@
 
 ### 6.1 binlog 问题
 
-#### 6.1.1 Kafka 相关问题
+#### 6.1.1 Drainer 中的 sarama 报 EOF 错误
 
-- 因为 Kafka 客户端版本设置问题，导致 Drainer 写 Kafka 一直报错，无法同步数据到 Kafka，见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
-- 因为 binlog 太大，导致 Drainer 写 Kafka 报错并 panic 退出，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
+- Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
+
+#### 6.1.2 Drainer 写 Kafka 报错并 panic 退出
+
+- binlog 数据太大，造成写 Kafka 的单条消息太大，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
 
 ### 6.2 DM 问题
 
