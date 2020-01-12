@@ -2,3 +2,4 @@ tidb-map is a map use to guide people to understand TiDB or diagnose problems th
 
 - [ ] performance map
 - [ ] oncall map
+- [ ] contribution map
