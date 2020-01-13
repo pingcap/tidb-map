@@ -56,53 +56,53 @@
 
 ### 4.1 TiKV panic 启动不了
 
-- sync-log = false，机器断电（符合预期，通过 tikv-ctl 恢复）
-- 虚拟机部署 TiKV，kill 虚拟机/物理机关闭（符合预期，虚拟机的 fsync 不可靠）
+- sync-log = false，机器断电之后出现 unexpected raft log index: last_index X < applied_index Y 错误。符合预期，需通过 tikv-ctl 恢复 region
+- 虚拟机部署 TiKV，kill 虚拟机/物理机断电，出现 entries[X, Y]  is unavailable from storage 错误。符合预期，虚拟机的 fsync 不可靠，需通过 tikv-ctl 恢复 region
 - 其他原因（非预期，需报 bug）
 
 ### 4.2 TiKV OOM
 
-- block-cache 配置太大，请检查 [storage.block-cache] capacity = "1GB" 参数
-- coprocessor 收到大量大查询，占用太多内存
+- block-cache 配置太大导致 OOM，在 TiKV grafana 选中对应的 instance 之后查看 rocksdb 的 block cache size 监控来确认是否是该问题。同时请检查 [storage.block-cache] capacity = # "1GB" 参数是否设置合理，默认情况下 TiKV 的 block-cache 设置为机器总内存的 45%，在 container 部署的时候需要显式指定该参数，因为 TiKV 获取的是物理机的内存，可能会超出 container 的限制。
+- coprocessor 收到大量大查询，返回的数据量太大，gRPC 发送速度跟不上 coprocessor 往外吐数据的速度导致 OOM，可以通过检查 TiKV grafana coprocessor overview 的 response size 是否超过 network outbound 流量来确认。
 - 其他部分占用太多内存（非预期，需报 bug）
 
-### 4.3 客户端报 server is busy 错误。通过 TiKV grafana errors 确认具体 busy 原因
+### 4.3 客户端报 server is busy 错误。通过查看 TiKV grafana errors 监控确认具体 busy 原因
 
-- TiKV RocksDB 出现 write stall。一个 TiKV 实例有两个 RocksDB 实例，一个存储 raft 日志，位于 data/raft，一个存储真正的数据，位于data/db
-- scheduler too busy
+- 4.3.1 TiKV RocksDB 出现 write stall。一个 TiKV 实例有两个 RocksDB 实例，一个存储 raft 日志，位于 data/raft，一个存储真正的数据，位于data/db。通过 grep "Stalling" RocksDB 日志查看具体原因，RocksDB 日志是 LOG 开头的文件，LOG 为当前日志
+
+	- level0 sst 太多导致 stall，添加参数 max-sub-compactions = 2/3 加快 level0 sst 往下 compact 速度，见 ONCALL-815
+	- pending compaction bytes 太多，磁盘 IO 能力在业务高峰跟不上写入，调整 soft-pending-compaction-bytes-limit 参数，见 ONCALL-275；磁盘 IO 能力持续跟不上写入，建议扩容
+
+- 4.3.2 scheduler too busy
 
 	- 写入冲突严重，latch wait 高（查看 scheduler prewrite|commit ），scheduler 写入任务堆积，导致超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值
 	- 写入慢导致写入堆积，正在写入的数据超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值
 
-- raftstore channel full，主要是消息的处理速度没有跟上接收消息的速度。短时间的 channel full 不会影响服务，持续出现该错误会导致 leader 切换走
+- 4.3.3 raftstore channel full，主要是消息的处理速度没有跟上接收消息的速度。短时间的 channel full 不会影响服务，持续出现该错误会导致 leader 切换走
 
 	- append log 出现了 stall
 	- append log 慢了
 	- 瞬间收到大量消息（查看 TiKV Raft messages 面板），raftstore 没处理过来，通常情况下短时间的 channel full 不会影响服务
 
-- TiKV coprocessor 排队，任务堆积超过了 coprocessor 线程数 * readpool.coprocessor.max-tasks-per-worker-[normal|low|high]。大量大查询导致 coprocessor 出现了堆积情况，需要确认是否有由于执行计划变化导致出现大量扫表操作。
+- 4.3.4 TiKV coprocessor 排队，任务堆积超过了 coprocessor 线程数 * readpool.coprocessor.max-tasks-per-worker-[normal|low|high]。大量大查询导致 coprocessor 出现了堆积情况，需要确认是否有由于执行计划变化导致出现大量扫表操作。
 
 ### 4.4 某些 TiKV 大量掉 leader
 
-- TiKV 重启了导致重新选举
+- 4.4.1 TiKV 重启了导致重新选举
 
-	- TiKV panic，被 systemd 重新拉起（非预期，需要报 bug）
+	- TiKV panic 之后又被 systemd 重新拉起正常运行，可以通过查看 TiKV 的日志来确认是否有 panic，这种情况属于非预期，需要报 bug
 	- 被第三者 stop/kill，被 systemd 重新拉起。查看 dmesg 和 TiKV log 确认原因
+	- TiKV 发生 OOM 导致重启了，参考 4.2
 	- 动态调整 THP 导致 hung 住，见 ONCALL-500
 
+- 4.4.2 TiKV grafana errors 面板 server is busy 看到 TiKV RocksDB 出现 write stall 导致发生重新选举，请参考 4.3.1
 - 网络隔离导致重新选举
-- TiKV grafana errors 面板 server is busy 看到 TiKV RocksDB 出现 write stall （grep Stalling RocksDB 日志查看 stall 原因，RocksDB 日志是 LOG 开头的文件，LOG 为当前日志）
-
-	- level0 sst 太多导致 stall，添加参数 max-sub-compactions = 2/3 加快 level0 sst 往下 compact 速度，见 ONCALL-815
-	- pending compaction bytes 太多，磁盘 IO 能力在业务高峰跟不上写入，调整 soft-pending-compaction-bytes-limit 参数，见 ONCALL-275；磁盘 IO 能力持续跟不上写入，建议扩容
-
-- TiKV OOM
 
 ## 5. PD 问题
 
 ### 5.1 PD 调度问题
 
-- 跨表空 region 无法 merge，见 ONCALL-896
+- 跨表空 region 无法 merge，需要修改 TiKV 的 [coprocessor] split-region-on-table = false 参数来解决，4.x 版本该参数默认为 false。见 ONCALL-896
 - TIKV 磁盘使用 80% 容量，PD 不会进行补副本操作，miss peer 数量上升，见 ONCALL-801
 - 下线 TiKV，有 region 长时间迁移不走，可能有问题，见 ONCALL-870
 
@@ -121,14 +121,15 @@
 
 ### 6.1 binlog 问题
 
-#### 6.1.1 Drainer 中的 sarama 报 EOF 错误
+- 6.1.1 Drainer 中的 sarama 报 EOF 错误
 
-- Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，需要修改配置 `kafka-version`, 见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
+	- Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，需要修改配置 `kafka-version`, 见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
 
-#### 6.1.2 Drainer 写 kafka 失败然后 panic，kafka 报 Message was too large 错误
+- 6.1.2 Drainer 写 kafka 失败然后 panic，kafka 报 Message was too large 错误
 
-- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
+	- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
 
 ### 6.2 DM 问题
 
 ### 6.3 lightning 问题
+
