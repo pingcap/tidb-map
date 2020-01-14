@@ -108,46 +108,46 @@
 
 ### 5.1 PD 调度问题
 
-#### 5.1.1 merge 问题
+- 5.1.1 merge 问题
 
-- 跨表空 region 无法 merge，需要修改 TiKV 的 [coprocessor] split-region-on-table = false 参数来解决，4.x 版本该参数默认为 false。见 ONCALL-896
-- region merge 慢，可检查 PD 监控 operator 面板是否有 merge 的 operator 产生，参考 [PD 调度参数指南（3.0）文档](https://docs.google.com/document/d/1GLyP9RR4hV7Tpy_xacMbcG0tMi4azh75pXocWKy06xo/edit#)
+	- 跨表空 region 无法 merge，需要修改 TiKV 的 [coprocessor] split-region-on-table = false 参数来解决，4.x 版本该参数默认为 false。见 ONCALL-896
+	- region merge 慢，可检查 PD 监控 operator 面板是否有 merge 的 operator 产生，参考 [PD 调度参数指南（3.0）文档](https://docs.google.com/document/d/1GLyP9RR4hV7Tpy_xacMbcG0tMi4azh75pXocWKy06xo/edit#)
 ]
 
-#### 5.1.2 补副本/上下线问题
+- 5.1.2 补副本/上下线问题
 
-- TIKV 磁盘使用 80% 容量，PD 不会进行补副本操作，miss peer 数量上升，见 ONCALL-801
-- 下线 TiKV，有 region 长时间迁移不走，可能有问题，见 ONCALL-870
+	- TIKV 磁盘使用 80% 容量，PD 不会进行补副本操作，miss peer 数量上升，见 ONCALL-801
+	- 下线 TiKV，有 region 长时间迁移不走，可能有问题，见 ONCALL-870
 
-#### 5.1.3 balance 问题
+- 5.1.3 balance 问题
 
-- leader/region count 分布不均，见 ONCALL-394, ONCALL-759。主要原因是 balance 是依赖 region/leader 的 size 去调度的，所以可能会造成 count 数量的不均衡，4.0 新增了一个参数 [leader-schedule-policy]，可以调整 leader 的调度策略，根据 "count" 或者是 "size" 进行调度
+	- leader/region count 分布不均，见 ONCALL-394, ONCALL-759。主要原因是 balance 是依赖 region/leader 的 size 去调度的，所以可能会造成 count 数量的不均衡，4.0 新增了一个参数 [leader-schedule-policy]，可以调整 leader 的调度策略，根据 "count" 或者是 "size" 进行调度
 
 ### 5.2 PD 选举问题
 
-#### 5.2.1 PD 发生 leader 切换
+- 5.2.1 PD 发生 leader 切换
 
-- 磁盘问题，PD 所在的节点 I/O 被打满，排查是否有其他 I/O 高的组件与 PD 混部以及盘的健康情况，可通过 disk performance 监控中 latency 和 load 等指标进行验证，必要时可以使用 [fio](https://internal.pingcap.net/confluence/pages/viewpage.action?pageId=14453828) 进行验证，见 ONCALL-292
-- 网络问题，PD 日志中有 lost the TCP streaming connection，排查 PD 间网络是否有问题，可通过 PD 监控中 etcd 的 round trip 来验证，见 ONCALL-177
-- 系统 load 高，日志中能看到 server is likely overloaded，见 ONCALL-214
+	- 磁盘问题，PD 所在的节点 I/O 被打满，排查是否有其他 I/O 高的组件与 PD 混部以及盘的健康情况，可通过 disk performance 监控中 latency 和 load 等指标进行验证，必要时可以使用 [fio](https://internal.pingcap.net/confluence/pages/viewpage.action?pageId=14453828) 进行验证，见 ONCALL-292
+	- 网络问题，PD 日志中有 lost the TCP streaming connection，排查 PD 间网络是否有问题，可通过 PD 监控中 etcd 的 round trip 来验证，见 ONCALL-177
+	- 系统 load 高，日志中能看到 server is likely overloaded，见 ONCALL-214
 
-#### 5.2.2 PD 选不出 leader 或者选举慢
+- 5.2.2 PD 选不出 leader 或者选举慢
 
-- 选不出 leader，PD 日志中有 lease is not expired，3.0.x 版本已 fix 该问题, 2.1.9 版本修复，见 ONCALL-875
-- 选举慢，region 加载时间长，从 PD 日志中 grep load regions, 如果出现秒级，则说明较慢，3.0 版本可开启 region storage，可以缩短加载 region 过程，见 ONCALL-429
+	- 选不出 leader，PD 日志中有 lease is not expired，3.0.x 版本已 fix 该问题, 2.1.9 版本修复，见 ONCALL-875
+	- 选举慢，region 加载时间长，从 PD 日志中 grep load regions, 如果出现秒级，则说明较慢，3.0 版本可开启 region storage，可以缩短加载 region 过程，见 ONCALL-429
 
-#### 5.2.3 TiDB 执行 SQL 时报 PD timeout
+- 5.2.3 TiDB 执行 SQL 时报 PD timeout
 
-- PD 没 leader 或者有切换，参考 5.2.1 和 5.2.2
-- 网络问题。排查网络相关情况，通过 blackbox 监控中 ping latency 确定 TiDB 到 PD leader 的网络是否正常
-- PD panic，报 bug
-- PD OOM 参考 5.3
-- 其他原因（curl http://127.0.0.1:2379/debug/pprof/goroutine\?debug\=2 抓 goroutine，报 bug）
+	- PD 没 leader 或者有切换，参考 5.2.1 和 5.2.2
+	- 网络问题。排查网络相关情况，通过 blackbox 监控中 ping latency 确定 TiDB 到 PD leader 的网络是否正常
+	- PD panic，报 bug
+	- PD OOM 参考 5.3
+	- 其他原因（curl http://127.0.0.1:2379/debug/pprof/goroutine?debug=2 抓 goroutine，报 bug）
 
-#### 5.2.4 其他问题
+- 5.2.4 其他问题
 
-- PD 报 FATAL 错误，日志中有 range failed to find revision pair，3.0.8 已经 fix 改问题，见 ONCALL-947
-- 其他原因，需报 bug
+	- PD 报 FATAL 错误，日志中有 range failed to find revision pair，3.0.8 已经 fix 改问题，见 ONCALL-947
+	- 其他原因，需报 bug
 
 ### 5.3 PD OOM
 
