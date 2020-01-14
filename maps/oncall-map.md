@@ -18,7 +18,7 @@
 
 ### 2.1 短暂性的
 
-- TiDB 执行计划不对。请参考 TiDB 执行计划不对问题。
+- TiDB 执行计划不对，请参考 3.3
 - PD 发生异常
 
 	- PD leader 发生切换
@@ -33,7 +33,8 @@
 	- 3.0 之前版本 raftstore 单线程或者 apply 单线程到达瓶颈，见 ONCALL-517
 
 - CPU load 升高
-- TiKV 写入慢
+- TiKV 写入慢，请参考 4.5
+- TiDB 执行计划不对，请参考 3.3
 
 ## 3. TiDB 问题
 
@@ -62,29 +63,30 @@
 
 ### 4.2 TiKV OOM
 
-- block-cache 配置太大导致 OOM，在 TiKV grafana 选中对应的 instance 之后查看 rocksdb 的 block cache size 监控来确认是否是该问题。同时请检查 [storage.block-cache] capacity = # "1GB" 参数是否设置合理，默认情况下 TiKV 的 block-cache 设置为机器总内存的 45%，在 container 部署的时候需要显式指定该参数，因为 TiKV 获取的是物理机的内存，可能会超出 container 的限制。
-- coprocessor 收到大量大查询，返回的数据量太大，gRPC 发送速度跟不上 coprocessor 往外吐数据的速度导致 OOM，可以通过检查 TiKV grafana coprocessor overview 的 response size 是否超过 network outbound 流量来确认。
+- block-cache 配置太大导致 OOM，在 TiKV grafana 选中对应的 instance 之后查看 RocksDB 的 block cache size 监控来确认是否是该问题。同时请检查 [storage.block-cache] capacity = # "1GB" 参数是否设置合理，默认情况下 TiKV 的 block-cache 设置为机器总内存的 45%，在 container 部署的时候需要显式指定该参数，因为 TiKV 获取的是物理机的内存，可能会超出 container 的内存限制。
+- coprocessor 收到大量大查询，返回的数据量太大，gRPC 发送速度跟不上 coprocessor 往外吐数据的速度导致 OOM。可以通过检查 TiKV grafana coprocessor overview 的 response size 是否超过 network outbound 流量来确认是否属于这种情况。
 - 其他部分占用太多内存（非预期，需报 bug）
 
-### 4.3 客户端报 server is busy 错误。通过查看 TiKV grafana errors 监控确认具体 busy 原因
+### 4.3 客户端报 server is busy 错误。通过查看 TiKV grafana errors 监控确认具体 busy 原因。server is busy 是 TiKV 自身的流控机制，TiKV 通过这种方式告知 tidb/ti-client 当前 TiKV 的压力过大，等会再尝试
 
-- 4.3.1 TiKV RocksDB 出现 write stall。一个 TiKV 实例有两个 RocksDB 实例，一个存储 raft 日志，位于 data/raft，一个存储真正的数据，位于data/db。通过 grep "Stalling" RocksDB 日志查看具体原因，RocksDB 日志是 LOG 开头的文件，LOG 为当前日志
+- 4.3.1 TiKV RocksDB 出现 write stall。一个 TiKV 包含两个 RocksDB 实例，一个用于存储 raft 日志，位于 data/raft，一个用于存储真正的数据，位于data/db。通过 grep "Stalling" RocksDB 日志查看 stall 的具体原因，RocksDB 日志是 LOG 开头的文件，LOG 为当前日志
 
-	- level0 sst 太多导致 stall，添加参数 max-sub-compactions = 2/3 加快 level0 sst 往下 compact 速度，见 ONCALL-815
-	- pending compaction bytes 太多，磁盘 IO 能力在业务高峰跟不上写入，调整 soft-pending-compaction-bytes-limit 参数，见 ONCALL-275；磁盘 IO 能力持续跟不上写入，建议扩容
+	- level0 sst 太多导致 stall，添加参数 [rocksdb] max-sub-compactions = 2（或者 3） 加快 level0 sst 往下 compact 的速度，该参数的意思是将 level0->level1 的 compaction 任务最多切成max-sub-compactions 个子任务交给多线程并发执行。见 ONCALL-815
+	- pending compaction bytes 太多导致 stall，磁盘 IO 能力在业务高峰跟不上写入，可以通过调大对应 cf 的 soft-pending-compaction-bytes-limit 和 hard-pending-compaction-bytes-limit 参数来缓解，例如 [rocksdb.defaultcf] soft-pending-compaction-bytes-limit = "128GB"（当 pending compaction bytes 达到该阈值，RocksDB 会放慢写入速度。默认值 64GB）hard-pending-compaction-bytes-limit = "512GB"（当 pending compaction bytes 达到该阈值，RocksDB 会 stop 写入，通常不太可能触发该情况，因为在达到 soft-pending-compaction-bytes-limit 的阈值之后会放慢写入速度。默认值 256GB），见 ONCALL-275；如果磁盘 IO 能力持续跟不上写入，建议扩容
+	- memtable 太多导致 stall。该情况一般发生在瞬间写入量比较大，并且 memtable flush 到磁盘的速度比较慢的情况下。如果磁盘写入速度不能改善，并且只有业务峰值会出现这种情况，可以通过调大对应 cf 的 max-write-buffer-number 来缓解，例如 [rocksdb.defaultcf] max-write-buffer-number = 8 （默认值 5），同时请求注意在高峰期可能会占用更多的内存，因为可能存在于内存中的 memtable 会更多
 
 - 4.3.2 scheduler too busy
 
-	- 写入冲突严重，latch wait 高（查看 scheduler prewrite|commit ），scheduler 写入任务堆积，导致超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值
-	- 写入慢导致写入堆积，正在写入的数据超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值
+	- 写入冲突严重，latch wait duration 比较高（查看 scheduler prewrite|commit  的 latch wait duration），scheduler 写入任务堆积，导致超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值。TODO：通过查看 MVCC_CONFLICT_COUNTER 对应的 metric 来确认是否属于该情况
+	- 写入慢导致写入堆积，该 TiKV 正在写入的数据超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值。请参考 4.5
 
-- 4.3.3 raftstore channel full，主要是消息的处理速度没有跟上接收消息的速度。短时间的 channel full 不会影响服务，持续出现该错误会导致 leader 切换走
+- 4.3.3 raftstore channel full，主要是消息的处理速度没有跟上接收消息的速度。短时间的 channel full 不会影响服务，长时间持续出现该错误可能会导致 leader 切换走
 
-	- append log 出现了 stall
-	- append log 慢了
+	- append log 遇到了 stall，参考 4.3.1
+	- append log duration 比较高，导致处理消息不及时，可以参考 4.5 分析为什么 append log duration 比较高。
 	- 瞬间收到大量消息（查看 TiKV Raft messages 面板），raftstore 没处理过来，通常情况下短时间的 channel full 不会影响服务
 
-- 4.3.4 TiKV coprocessor 排队，任务堆积超过了 coprocessor 线程数 * readpool.coprocessor.max-tasks-per-worker-[normal|low|high]。大量大查询导致 coprocessor 出现了堆积情况，需要确认是否有由于执行计划变化导致出现大量扫表操作。
+- 4.3.4 TiKV coprocessor 排队，任务堆积超过了 coprocessor 线程数 * readpool.coprocessor.max-tasks-per-worker-[normal|low|high]。大量大查询导致 coprocessor 出现了堆积情况，需要确认是否有由于执行计划变化导致出现大量扫表操作，请参考 3.3
 
 ### 4.4 某些 TiKV 大量掉 leader
 
@@ -97,6 +99,10 @@
 
 - 4.4.2 TiKV grafana errors 面板 server is busy 看到 TiKV RocksDB 出现 write stall 导致发生重新选举，请参考 4.3.1
 - 网络隔离导致重新选举
+
+### 4.5 TiKV 写入慢
+
+- 通过查看 TiKV gRPC 的 prewrite/commit/raw-put duration 确认确实是 TiKV 写入慢了。通常情况下可以按照 performance-map 来定位到底哪个阶段慢了。
 
 ## 5. PD 问题
 
