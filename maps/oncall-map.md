@@ -16,23 +16,23 @@
 
 ### 2.1 短暂性的
 
-- TiDB 执行计划不对，请参考 3.3
-- PD 发生异常
+- 2.1.1 TiDB 执行计划不对，请参考 3.3
+- 2.1.2 PD 发生异常
 
 	- PD leader 发生切换
 
-- 某些 TiKV 大量掉 leader
+- 2.1.3 某些 TiKV 大量掉 leader
 
 ### 2.2 Latency 明显升高（持续的）
 
-- TiKV 单线程瓶颈
+- 2.2.1 TiKV 单线程瓶颈
 
 	- region 过多导致单个 gRPC 线程成为瓶颈，需要开启 hibernate region 特性，见 ONCALL-612
 	- 3.0 之前版本 raftstore 单线程或者 apply 单线程到达瓶颈，见 ONCALL-517
 
-- CPU load 升高
-- TiKV 写入慢，请参考 4.5
-- TiDB 执行计划不对，请参考 3.3
+- 2.2.2 CPU load 升高
+- 2.2.3 TiKV 写入慢，请参考 4.5
+- 2.2.4 TiDB 执行计划不对，请参考 3.3
 
 ## 3. TiDB 问题
 
@@ -155,12 +155,12 @@
 
 ### 5.3 PD OOM
 
-- 使用 /api/v1/regions 接口时 region 数量过多可能会导致 PD OOM，3.0.8 版本修复
-- gRPC 消息大小没限制，监控可看到 TCP InSegs 较大，3.0.6 版本修复，见 ONCALL-852
+- 5.3.1 使用 /api/v1/regions 接口时 region 数量过多可能会导致 PD OOM，3.0.8 版本修复
+- 5.3.2 gRPC 消息大小没限制，监控可看到 TCP InSegs 较大，3.0.6 版本修复，见 ONCALL-852
 
 ### 5.4 grafana 显示问题
 
-- PD role 显示 follower，grafana 表达式问题，3.0.8 版本修复，见 ONCALL-1022
+- 5.4.1 PD role 显示 follower，grafana 表达式问题，3.0.8 版本修复，见 ONCALL-1022
 
 ## 6. 生态 tools 问题
 
