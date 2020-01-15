@@ -2,17 +2,15 @@
 
 ## 1. 服务不可用
 
-### 1.1 客户端报 region unavailable 错误
+### 1.1 客户端报 region is unavailable 错误
 
-- region unavailable 一般是由于 region 在一段时间不可用导致（遇到 TiKV server is busy 或者发送给 TiKV 的请求由于 not leader 或者 epoch not match 被打回，或者请求 TiKV 超时等），TiDB 内部会进行 backoff 重试机制，backoff 的时间超过了一定阈值（默认 20s），就会报错给客户端，如果 backoff 在阈值内该错误对于客户端是无感知的。
-- 多台 TiKV 同时 OOM 导致 region 在一定时期内没有 leader，例如 ONCALL-991
-- TiKV 报 server is busy
-- 多台 TiKV 启动不了导致 region 没有 leader。单台物理部署多个 TiKV 实例，一个物理机挂掉，由于 label 配置错了导致 region 没有 leader ，见 ONCALL-228
-- follower apply 落后，成为 leader 之后把收到的请求以 epoch not match 理由打回，见 ONCALL-958（TiKV 内部需要优化改机制）
+- 1.1.1 region unavailable 一般是由于 region 在一段时间不可用导致（遇到 TiKV server is busy 或者发送给 TiKV 的请求由于 not leader 或者 epoch not match 被打回，或者请求 TiKV 超时等），TiDB 内部会进行 backoff 重试机制，backoff 的时间超过了一定阈值（默认 20s），就会报错给客户端，如果 backoff 在阈值内该错误对于客户端是无感知的。
+- 1.1.2 多台 TiKV 同时 OOM 导致 region 在一定时期内没有 leader，例如 ONCALL-991
+- 1.1.3 TiKV 报 server is busy，超过 backoff 时间，参考 4.3。server is busy 属于内部流控机制，后续可能不计入 backoff 时间，正在改善
+- 1.1.4 多台 TiKV 启动不了导致 region 没有 leader。单台物理部署多个 TiKV 实例，一个物理机挂掉，由于 label 配置错了导致 region 没有 leader ，见 ONCALL-228
+- 1.1.5 follower apply 落后，成为 leader 之后把收到的请求以 epoch not match 理由打回，见 ONCALL-958（TiKV 内部需要优化改机制）
 
-### 1.2 客户端报 server is busy 错误。请参考 TiKV 问题 server is busy 介绍
-
-### 1.3 PD 异常，请查看 PD 问题
+### 1.2 PD 异常，请查看 PD 问题
 
 ## 2. Latency 明显升高
 
@@ -80,7 +78,7 @@
 	- 写入冲突严重，latch wait duration 比较高（查看 scheduler prewrite|commit  的 latch wait duration），scheduler 写入任务堆积，导致超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值。TODO：通过查看 MVCC_CONFLICT_COUNTER 对应的 metric 来确认是否属于该情况
 	- 写入慢导致写入堆积，该 TiKV 正在写入的数据超过了 [storage] scheduler-pending-write-threshold = "100MB" 设置的阈值。请参考 4.5
 
-- 4.3.3 raftstore channel full，主要是消息的处理速度没有跟上接收消息的速度。短时间的 channel full 不会影响服务，长时间持续出现该错误可能会导致 leader 切换走
+- 4.3.3 raftstore is busy，主要是消息的处理速度没有跟上接收消息的速度。短时间的 channel full 不会影响服务，长时间持续出现该错误可能会导致 leader 切换走
 
 	- append log 遇到了 stall，参考 4.3.1
 	- append log duration 比较高，导致处理消息不及时，可以参考 4.5 分析为什么 append log duration 比较高。
@@ -102,7 +100,13 @@
 
 ### 4.5 TiKV 写入慢
 
-- 通过查看 TiKV gRPC 的 prewrite/commit/raw-put duration 确认确实是 TiKV 写入慢了。通常情况下可以按照 performance-map 来定位到底哪个阶段慢了。
+- 4.5.1 通过查看 TiKV gRPC 的 prewrite/commit/raw-put(仅限 raw kv 集群) duration 确认确实是 TiKV 写入慢了。通常情况下可以按照 performance-map 来定位到底哪个阶段慢了，下面列出集中常见的情况
+- 4.5.2 scheduler CPU 繁忙（仅限 transaction kv）。prewrite/commit 的 scheduler command duration 比 scheduler latch wait duration + storage async write duartion 更长，并且 scheduler worker CPU 比较高，例如超过 scheduler-worker-pool-size * 100% 的 80%，并且或者整个机器的 CPU 资源比较紧张。如果写入量很大，确认下是否 [storage] scheduler-worker-pool-size 配置得太小。其他情况请报 bug
+- 4.5.3 append log 慢。TiKV grafana 的 Raft IO/append log duration 比较高，通常情况下是由于写盘慢了，可以检查 RocksDB - raft 的 WAL Sync Duration max 值来确认，否则可能需要报 bug
+- 4.5.4 raftstore 线程繁忙。TiKV grafana 的 Raft Propose/propose wait duration 明显高于 append log duration。请查看 1）[raftstore] store-pool-size 配置是否过小（该值建议在[1,5] 之间，不建议太大）。2）机器的 CPU 是不是不够了
+- 4.5.5 apply 慢了。TiKV grafana 的 Raft IO/apply log duration 比较高，通常会伴随着 Raft Propose/apply wait duration 比较高。可能是 1） [raftstore] apply-pool-size 配置过小（建议在 [1, 5] 之间，不建议太大），Thread CPU/apply cpu 比较高；2）机器的 CPU 资源不够了；3）region 写入热点问题，单个 apply 线程 CPU 使用率比较高（通过修改 grafana 表达式，加上 by (instance, name) 来看各个线程的 cpu 使用情况），暂时对于单个 region 的热点写入没有很好的方式，最近在优化该场景；4）写 RocksDB 比较慢，RocksDB kv/max write duration 比较高（单个 raft log 可能包含很多个 kv，写 rocksdb 的时候会把 128 个 kv 放在一个 write batch 写入到 rocksdb，所以一次 apply log 可能涉及到多次 RocksDB 的 write）；5）其他情况，需要报 bug
+- 4.5.6 raft commit log 慢了。TiKV grafana 的 Raft IO/commit log duration 比较高（4.x 版本的 grafana 才有该 metric）。每个 region 对应一个独立的 raft group，raft 本身是有流控机制的，类似 TCP 的滑动窗口机制，通过参数 [raftstore] raft-max-inflight-msgs = 256 来控制滑动窗口的大小，如果有热点写入并且 commit log duration 比较高可以适度调大改参数，比如 1024
+- 4.5.7 其他情况，请参考 performance-map 上的写入路径来分析
 
 ## 5. PD 问题
 
@@ -142,7 +146,7 @@
 	- 网络问题。排查网络相关情况，通过 blackbox 监控中 ping latency 确定 TiDB 到 PD leader 的网络是否正常
 	- PD panic，报 bug
 	- PD OOM 参考 5.3
-	- 其他原因（curl http://127.0.0.1:2379/debug/pprof/goroutine?debug=2 抓 goroutine，报 bug）
+	- 其他原因，通过 curl http://127.0.0.1:2379/debug/pprof/goroutine?debug=2 抓 goroutine，报 bug
 
 - 5.2.4 其他问题
 
