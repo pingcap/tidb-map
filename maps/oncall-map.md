@@ -174,6 +174,14 @@
 
 	- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
 
+- 6.1.3 Pump 无法写 binlog，报错 no space left on device
+
+	- 本地磁盘空间不足，Pump 无法正常写 binlog 数据。需要清理磁盘空间，然后重启 Pump，见 [TOOL-570](https://internal.pingcap.net/jira/browse/TOOL-570)
+
+- 6.1.4 Pump 启动时报错 `fail to notify all living drainer`
+
+    - Pump 启动时需要通知所有 Online 状态的 Drainer，如果通知失败则会打印该错误日志。可以使用 binlogctl 工具查看所有 Drainer 的状态是否有异常，保证 Online 状态的 Drainer 都在正常工作。如果某个 Drainer 的状态和实际运行情况不一致，则使用 binlogctl 修改状态，然后再重启 Pump。见 [fail-to-notify-all-living-drainer](https://pingcap.com/docs-cn/stable/reference/tidb-binlog/troubleshoot/error-handling/#pump-%E5%90%AF%E5%8A%A8%E6%97%B6%E6%8A%A5%E9%94%99-fail-to-notify-all-living-drainer)
+
 ### 6.2 DM 问题
 
 ### 6.3 lightning 问题
