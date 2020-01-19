@@ -180,8 +180,6 @@
 
 - 6.1.4 上下游数据不一致
 
-    - drainer log 中有 duplicate key 报错
-      - 可能是下游有其他数据源写入，导致 drainer 写入报主键冲突，drainer 重启后进入 safe-mode 模式，使用 REPLACE 强制写下游，有可能覆盖掉其他数据。见 [ONCALL-584](https://internal.pingcap.net/jira/browse/ONCALL-584)
     - 部分 TiDB 节点没有开启 binlog。访问 http://127.0.0.1:10080/info/all 接口可以检查所有节点的 Binlog 状态（TiDB Version >= v3.0.6)。
     - 部分 TiDB 节点进入 ignore binlog 状态。访问 http://127.0.0.1:10080/info/all 接口可以检查所有节点的 Binlog 状态（TiDB Version >= v3.0.6)。
     - 上下游 timestamp 列的值不一致
