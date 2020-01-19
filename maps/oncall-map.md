@@ -338,6 +338,10 @@ ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
 - 7.1.1 GC life time is shorter than transaction duration。事务执行时间太长，超过了 GC lifetime（默认 10min），可以通过修改 mysql.tidb 表来调整 life time，通常情况下不建议修改，会导致大量老版本堆积起来（如果有大量 update 和 delete 语句）
 - 7.1.2 txn takes too much time。事务太长时间（超过 590s）没有提交，准备提交的时候报该错误。可以通过调大 [tikv-client] max-txn-time-use = 590 参数，以及调大 GC life time 来绕过该问题（如果确实有这个需求）。通常情况下建议看看业务是否真的需要执行这么长时间的事务
 - 7.1.3 coprocessor.go 报 request outdated。发往 TiKV 的 coprocessor 请求在 TiKV 端排队时间超过了 60s，直接返回该错误。需要排查 TiKV coprocessor 为什么排队这么严重。
+- 7.1.4 region_cache.go 大量报 switch region peer to next due to send request fail 且 error 信息是 context deadline exceeded。请求 TiKV 超时触发 region cache 切换请求其他节点，可以对日志中的 addr 字段继续 grep "\<addr\> cancelled" 根据 grep 结果:
+	- send request is cancelled。请求发送阶段超时，可以排查 grafana TiDB 面板 - Batch Client - Pending Request Count by TiKV 是否大于 128 来确定是否因发送远超 KV 处理能力导致发送堆积，如果 Pending Request 不多需要排查日志确认是否因为对应 KV 有运维变更导致短暂报出， 否则非预期，需报 bug
+	- wait response is cancelled。请求发送到 TiKV 后超时未收到 TiKV 相应需要排查对应地址 TiKV 响应时间和对应 region 在当时的 PD 和 KV 日志来确定为什么 KV 未及时响应。
+- 7.1.5 distsql.go 报 inconsistent index。数据索引疑似发生不一致，首先对报错的信息中 index 所在表执行 admin check table \<TableName\> 命令，如果检查失败则先通过 begin;update mysql.tidb set variable_value='72h' where variable_name='tikv_gc_life_time';commit; 命令关闭 GC 并按照TiDB 中[数据不一致问题的常用排查方法](https://docs.google.com/document/d/1re65mWZcIRD13EqKgi9qJU6mve6YhBDjw40vfLH8sXc/edit)进一步排查并向研发报 bug
 
 ### 7.2 TiKV
 
@@ -346,4 +350,4 @@ ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
 - 7.2.3 TxnLockNotFound。事务提交太慢，过了 ttl（小事务默认 3s） 时间之后被其他事务回滚了，该事务会自动重试，通常情况下对业务无感知
 - 7.2.4 PessimisticLockNotFound。类似 TxnLockNotFound，悲观事务提交太慢被其他事务回滚了
 - 7.2.5 stale_epoch。请求的 epoch 太旧了，TiDB 会更新路由之后再重新发送请求，业务无感知。epoch 在 region 发生 split/merge 以及迁移副本的时候会变化。
-- 7.2.6 peer is not leader。请求发到了非 leader 的副本上，TiDB 会根据该错误更新本地路由（如果错误 response 里面携带了最新的 leader 是哪个副本这一信息）并且重新发送请求到最新 leader，一般情况下业务无感知。如果由于其他原因导致一些 region 一直没有 leader 导致，请参考 4.4
+- 7.2.6 peer is not leader。请求发到了非 leader 的副本上，TiDB 会根据该错误更新本地路由（如果错误 response 里面携带了最新的 leader 是哪个副本这一信息）并且重新发送请求到最新 leader，一般情况下业务无感知。在 3.0 后 TiDB 在原 leader 请求失败时会尝试其他 peer 也会导致 TiKV 频繁出现 not leader 日志, 可以通过排查 TiDB 对应 region 的 switch region peer to next due to send request fail 日志排查发送失败根本原因，参考 7.1.4。另外也可能是由于其他原因导致一些 region 一直没有 leader 导致，请参考 4.4
