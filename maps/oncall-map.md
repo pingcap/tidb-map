@@ -39,87 +39,17 @@
 ### 3.1 DDL
 
 - 修改 decimal 字段长度报错 ERROR 1105 (HY000): unsupported modify decimal column precision 见 ONCALL-1004
-- Error 1105: Information schema is out of date 。写入数据时，出现该报错意味着该 TiDB 节点无法加载到最新的 schema 版本信息，或者加载最新 Schema 版本信息超时（最大2*lease，默认 45s)，该条 SQL 会失败。
-   - 可能的原因是
-      - 执行此 DML 的 TiDB 被 kill 后准备退出，且此 DML 对应的事务执行时间超过一个 DDL lease，在事务提交时会报这个错误。
-      - TiDB 在执行此 DML 时，有一段时间内连不上 PD 或者 TiKV，导致 TiDB 超过一个 DDL lease 时间没有 load schema，或者导致 TiDB 断开与 PD 之间带 keep alive 设置的连接。
-      - TiKV 压力大或者是网络超时，通过监控查看 TiDB 和 TiKV 节点的负载情况
-      - 查看 TiDB 和 TiKV 之间的网络情况
-
--  TiDB DDL job 卡住不动 / 执行很慢（通过 admin show ddl jobs 可以查看 ddl 进度）
-
-    - 原因1：与外部组件（PD / TiKV）的网络问题
-    - 原因2：早期版本（3.0.8 之前）TiDB 内部自身负载很重（高并发下可能起了很多协程）
-    - 原因3：早期版本（2.1.15 & 3.0.0-rc1 之前） PD 实例删除 TiDB key 无效的问题，会导致每次 DDL 变更都需要等 2 个 lease（很慢） 
-    - 其他未知原因（请上报 bug 到 github.com/pingcap/tidb）
-    - 方案：第 1 种原因需要检查与外部组件的网络问题；第 2，3 种原因已经修复，需要升级到高版本；其他原因可选择以下兜底方案进行 ddl owner 迁移
-    - ddl owner 迁移方案
-        - 1：与该台 TiDB 可以网络互通：curl -X POST http://{TiDBIP}:10080/ddl/owner/resign (可重新进行 owner 选举)
-        - 2：与该台 TiDB 不可以网络互通，需旁路下线：tidb-ctl etcd delowner [LeaseID] [flags] + ownerKey (从 etcd 上直删，之后也会重新选举)
-
-
-- TiDB 日志中报 "information schema is changed" 的错误
-
-    - 原因1：正在执行的 DML 所涉及的表和正在做 DDL 的表相同（通过 admin show ddl job 可查看正在运行的 ddl）
-    - 原因2：当前执行的 DML 时间太久，且这段时间内执行了很多 DDL（新版本 `lock table` 也可），导致中间 `schema` 版本变更超过 1024
-    - 原因3：当前执行 DML 请求的 TiDB 实例长时间不能 load 到新的 `schema information` （与 PD 或者 TiKV 网络问题等都会导致此问题），而这段时间内执行了很多 DDL 语句（也包括 `lock table` 语句），导致中间 `schema` 版本变更超过 100（目前我们没有按 `schema` 版本去获取信息）
-    - 方案：前 2 种原因都不会导致业务问题，相应的 DML 会在失败后重试；第 3 种原因需要检查 TiDB 实例和 PD 及 TiKV 的网络情况
-    - 背景知识：schema version 的增长数量与每个 DDL 变更操作的 `schema state` 个数一致， 列如：`create table` 操作会有 1 个版本变更 / `add column` 操作会有 4 个版本变更（详情可以 [online schema change](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/41376.pdf)）。所以太多的 column 变更操作会导致 schema version 增长的很快。
-
-- TiDB 日志中报 "information schema is out of date" 的错误
-    
-    - 原因1：执行 DML 的 TiDB 被 graceful kill 后准备退出，且此 DML 对应的事务执行时间超过一个 DDL lease，在事务提交时候会报此错
-    - 原因2：TiDB 在执行 DML 时，有一段时间连不上 PD 和 TiKV，导致 1. TiDB 在超过一个 DDL Lease 的时间内没有 load 到新的 schema / 2. 或者导致 TiDB 断开与 PD 之间带 keep alive 设置的连接
-    - 方案：第 1 种原因在 TiDB 起来时，手动重试该 DML 即可；第 2 种原因需要检查 TiDB 实例和 PD 及 TiKV 的网络波动情况
-    
 
 ### 3.2 OOM 问题
 
-- 3.2.1 现象
-
-	- 客户端：客户端收到 tidb-server 报错 "ERROR 2013 (HY000): Lost connection to MySQL server during query"
-	- 日志
-
-		- `dmesg -T | grep tidb-server` 结果中有事故发生附近时间点的 OOM-killer 的日志
-		-  tidb.log 中可以 grep 到事故发生后附近时间的 "Welcome to TiDB" 的日志（即 tidb-server 发生重启） 
-		-  tidb_stderr.log 中能 grep 到 "fatal error: runtime: out of memory" 或 "cannot allocate memory" 
-		-  v2.1.8 及其之前的版本，tidb_stderr.log 中能 grep 到 “fatal error: stack overflow”
-
-	- 监控：tidb-server 实例所在机器可用内存迅速回升
-
-- 3.2.2 定位造成 OOM 的 SQL(目前所有版本都无法完成精准定位，需要在发现 SQL 后再做进一步分析确认 OOM 是否确由该 SQL 造成)
-
-	- >= v3.0.0 的版本, 可以在 tidb.log 中 grep “expensive_query”，该 log 会记录运行超时、或使用内存超过阈值的 SQL。
-	- < v3.0.0 的版本, 通过 grep “memory exceeds quota” 定位运行时内存超限的 SQL。
-	- 注：单条 SQL 内存阈值默认值为 32GB，可通过 tidb_mem_quota_query 系统变量进行设置，作用域 SESSION， 单位 Byte。也可以通过配置项热加载的方式，对配置文件中的 mem-quota-query 项进行修改，单位 Byte。
-
-- 3.2.3 缓解 OOM 问题
-
-	- 通过开启 SWAP 的方式，可以缓解由于大查询使用内存过多而造成的 OOM 问题。但该方法会在内存空间不足时，由于存在 IO 开销，因此大查询性能造成一定影响。性能回退程度受剩余内存量、读写盘速度影响。
-
-- 3.2.4 OOM 常见原因
-
-	- SQL 中包含 join，通过 explain 查看发现该 join 选用 HashJoin 算法且 inner 端的表很大。如 TiDB-4116
-	- 单条 UPDATE/ DELETE 涉及的查询数据量太大。如 ONCALL-882
-	- SQL 中包含 Union 连接的多条子查询。如 TiDB-1828
-
-
 ### 3.3 执行计划不对
 
-- 3.3.1 现象
-	- SQL 相比于之前的执行时间有较大程度变慢，执行计划突然发生改变；如果慢日志中输出了执行计划，可以直接对比执行计划
-	- SQL 执行时间相比于其他数据库(例如 MySQL)有较大差距；可以对比其他数据库执行计划，例如 Join Order 是否不同
-	- 慢日志中 SQL 执行时间 Scan Keys 数目较大
+- 统计信息不准
 
-- 3.3.2 排查执行计划问题
-	- explain analyze SQL。在执行时间可以接受的情况下，对比 explain analyze 结果中 count 和 execution info 中 rows 的数目差距；如果在 TableScan/IndexScan 行上发现比较大的差距，很大可能是统计信息出问题；如果在其他行上发现较大差距，则也有可能是非统计信息问题。
-	- select count(`*`)。在执行计划中包含 join 等情况下，explain analyze 可能耗时过长；此时可以通过对 TableScan/IndexScan 上的条件进行 select count(`*`)，并对比 explain 结果中的 row count 信息，确定是不是统计信息的问题
+	- 统计信息更新不及时，例如 ONCALL-968
+	- 自动收集没有生效，例如 ONCALL-933
 
-- 3.3.3 缓解问题
-	- 3.0 版本以及以上版本可以使用 SQL Bind 功能固定执行计划
-	- 更新统计信息。在大致确定问题是由统计信息导致的情况下，先 [dump 统计信息](https://github.com/pingcap/docs-cn/blob/master/dev/reference/performance/statistics.md#%E5%AF%BC%E5%87%BA%E7%BB%9F%E8%AE%A1%E4%BF%A1%E6%81%AF)保留现场。如果统计信息是由于过期导致，例如 show stats_meta 中 modify
-	 count / row count 大于某个值（例如 0.3）或者表中存在时间列的索引情况下，可以先尝试 analyze table 恢复；如果配置了 auto analyze，可以查看系统变量 tidb_auto_analyze_ratio 是否过大（例如大于 0.3），以及当前时间是否在 tidb_auto_analyze_start_time 和 tidb_auto_analyze_end_time 范围内。
-  - 其他情况需报 bug
+- 非统计信息不准问题（非预期，需报 bug）
 
 ## 4. TiKV 问题
 
@@ -236,98 +166,15 @@
 
 ### 6.1 binlog 问题
 
-- 6.1.1 Pump/Drainer Status 中 Update Time 正常更新，日志中也没有异常，但下游没有数据写入
-    
-    - TiDB 配置中没有开启 binlog，需要修改 TiDB 配置 `[binlog]`
+- 6.1.1 Drainer 中的 sarama 报 EOF 错误
 
-- 6.1.2 Drainer 中的 sarama 报 EOF 错误
+	- Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，需要修改配置 `kafka-version`, 见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
 
-    - Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，需要修改配置 `kafka-version`, 见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
+- 6.1.2 Drainer 写 kafka 失败然后 panic，kafka 报 Message was too large 错误
 
-- 6.1.3 Drainer 写 kafka 失败然后 panic，kafka 报 Message was too large 错误
-
-    - binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
-
-- 6.1.4 上下游数据不一致
-
-    - 部分 TiDB 节点没有开启 binlog。访问 http://127.0.0.1:10080/info/all 接口可以检查所有节点的 Binlog 状态（TiDB Version >= v3.0.6)。
-    - 部分 TiDB 节点进入 ignore binlog 状态。访问 http://127.0.0.1:10080/info/all 接口可以检查所有节点的 Binlog 状态（TiDB Version >= v3.0.6)。
-    - 上下游 timestamp 列的值不一致
-        - 时区问题，需要确保 drainer 和上下游数据库时区一致，drainer 通过 `/etc/localtime` 获取时区，不支持 `TZ` 环境变量，见 [ONCALL-826](https://internal.pingcap.net/jira/browse/ONCALL-826)
-        - TiDB 中 timestamp 的默认值为 null，mysql5.7 中 timestamp 默认值为当前时间（mysql8 无此问题），因此在上游写入 null 的 timestamp 且下游是 mysql57 时，timestamp 列数据不一致。在开启 binlog 前，在上游执行 `set @@global.explicit_defaults_for_timestamp=on;` 可解决问题，见 [TOOL-1539](https://internal.pingcap.net/jira/browse/TOOL-1539)
-    - 其他情况报 bug
-
-- 6.1.5 同步慢
-    
-    - 下游是 TiDB/MySQL，上游频繁做 DDL，参见 [ONCALL-1023](https://internal.pingcap.net/jira/browse/ONCALL-1023)
-    - 下游是 TiDB/MySQL，需要同步的表中存在没有主键且没有唯一索引的表，这种情况会导致 binlog 性能下降，建议加主键或唯一索引
-    - 下游输出到文件，检查目标磁盘/网络盘
-    - 其他情况报 bug
-
-- 6.1.6 Pump 无法写 binlog，报错 no space left on device
-
-    - 本地磁盘空间不足，Pump 无法正常写 binlog 数据。需要清理磁盘空间，然后重启 Pump，见 [TOOL-570](https://internal.pingcap.net/jira/browse/TOOL-570)
-
-- 6.1.7 Pump 启动时报错 `fail to notify all living drainer`
-
-    - Pump 启动时需要通知所有 Online 状态的 Drainer，如果通知失败则会打印该错误日志。可以使用 binlogctl 工具查看所有 Drainer 的状态是否有异常，保证 Online 状态的 Drainer 都在正常工作。如果某个 Drainer 的状态和实际运行情况不一致，则使用 binlogctl 修改状态，然后再重启 Pump。见 [fail-to-notify-all-living-drainer](https://pingcap.com/docs-cn/stable/reference/tidb-binlog/troubleshoot/error-handling/#pump-%E5%90%AF%E5%8A%A8%E6%97%B6%E6%8A%A5%E9%94%99-fail-to-notify-all-living-drainer)
-
-- 6.1.8 Drainer 报错 `gen update sqls failed: table xxx: row data is corruption []`
-    
-    - 触发条件：上游做 Drop Column DDL 的时候同时在做这张表的 DML。已经在 v3.0.6 fix，见 [ONCALL-820](https://internal.pingcap.net/jira/browse/ONCALL-820)
-
-- 6.1.9 Drainer 同步卡住，进程活跃但 checkpoint 不更新
-
-    - 已知 bug 在 v3.0.4 fix，见 [ONCALL-741](https://internal.pingcap.net/jira/browse/ONCALL-741)
-
-- 6.1.10 任何组件 panic
-    - 报 bug
+	- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
 
 ### 6.2 DM 问题
-- 6.2.1 执行 query-status 或查看日志时出现 Access denied for user 'root'@'172.31.43.27' (using password: YES)
-    - 在所有 DM 配置文件中，数据库相关的密码都必须使用经 dmctl 加密后的密文（若数据库密码为空，则无需加密）
-
-    - 在 DM 运行过程中，上下游数据库的用户必须具备相应的读写权限。在启动同步任务过程中，DM 会自动进行相应权限的检查 [前置检查](https://pingcap.com/docs-cn/stable/reference/tools/data-migration/precheck/#%E4%B8%8A%E6%B8%B8-mysql-%E5%AE%9E%E4%BE%8B%E9%85%8D%E7%BD%AE%E5%89%8D%E7%BD%AE%E6%A3%80%E6%9F%A5)
-
-    - 同一套 DM 集群，混合部署不同版本的 DM-worker/DM-master/dmctl，见 [asktug-1049](https://asktug.com/t/dm1-0-0-ga-access-denied-for-user/1049/5)
-
-
-- 6.2.2 DM 同步任务中断并包含 driver: bad connection 错误
-    - 发生 driver: bad connection 错误时，通常表示 DM 到下游 TiDB 的数据库连接出现了异常（如网络故障、TiDB 重启等）且当前请求的数据暂时未能发送到 TiDB
-
-        - 1.0.0 GA 之前版本，DM 发生该类型错误时，需要先使用 stop-task 停止任务后再使用 start-task 重启任务。
-
-        - 1.0.0 GA 版本，增加对此类错误的自动重试机制，见 [pr 265](https://github.com/pingcap/dm/pull/265)
-
-- 6.2.3 同步任务中断并包含 invalid connection 错误
-
-    - 发生 invalid connection 错误时，通常表示 DM 到下游 TiDB 的数据库连接出现了异常（如网络故障、TiDB 重启、TiKV busy 等）且当前请求已有部分数据发送到了 TiDB。由于 DM 中存在同步任务并发向下游复制数据的特性，因此在任务中断时可能同时包含多个错误（可通过 query-status 或 query-error 查询当前错误）。
-
-        - 如果错误中仅包含 invalid connection 类型的错误且当前处于增量复制阶段，则 DM 会自动进行重试。
-
-        - 如果 DM 由于版本问题（1.0.0-rc.1 后引入自动重试）等未自动进行重试或自动重试未能成功，则可尝试先使用 stop-task 停止任务，然后再使用 start-task 重启任务。
-
-- 6.2.4 relay 处理单元报错 event from * in * diff from passed-in event * 或同步任务中断并包含 get binlog error ERROR 1236 (HY000)、binlog checksum mismatch, data may be corrupted 等 binlog 获取或解析失败错误
-
-    - 在 DM 进行 relay log 拉取与增量同步过程中，如果遇到了上游超过 4GB 的 binlog 文件，就可能出现这两个错误。原因是 DM 在写 relay log 时需要依据 binlog position 及文件大小对 event 进行验证，且需要保存同步的 binlog position 信息作为 checkpoint。但是 MySQL binlog position 官方定义使用 uint32 存储，所以超过 4G 部分的 binlog position 的 offset 值会溢出，进而出现上面的错误。
-
-        - 对于 relay 处理单元， [可通过官网步骤进行手动处理](https://pingcap.com/docs-cn/stable/reference/tools/data-migration/troubleshoot/error-handling/)
-
-        - 对于 binlog replication 处理单元，[可通过官网步骤进行手动处理](https://pingcap.com/docs-cn/stable/reference/tools/data-migration/troubleshoot/error-handling/)
-
-- 6.2.5 DM 同步中断，日志报错 ERROR 1236 (HY000) The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires.
-    - 检查 master 的 binlog 是否被 purge
-
-    - 检查 relay.meta 中记录的位点信息
-        - relay.meta 中记录空的 GTID 信息，DM-worker 进程在退出时、以及定时（30s）会把内存中的 gtid 信息保存到 relay.meta 中，在没有获取到上游 GTID 信息的情况下，把空的 GTID 信息保存到了 relay.meta 中。见[ONCALL-772](https://internal.pingcap.net/jira/browse/ONCALL-772)
-
-        - relay.meta 中记录的 binlog event 不完整触发 recover 流程后记录错误的 GTID 信息，该问题可能会在 1.0.2 之前的版本遇到，已在 1.0.2 版本修复。见[ONCALL-764](https://internal.pingcap.net/jira/browse/ONCALL-764)
-
-- 6.2.6 DM 同步报错 Error 1366: incorr
-ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
-    - 该值 mysql 8.0 和 tidb 都不能写入成功，但是 mysql 5.7 可以写入成功。可以开启 tidb_skip_utf8_check 参数跳过数据格式检查。
-
-
 
 ### 6.3 lightning 问题
 
@@ -338,6 +185,10 @@ ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
 - 7.1.1 GC life time is shorter than transaction duration。事务执行时间太长，超过了 GC lifetime（默认 10min），可以通过修改 mysql.tidb 表来调整 life time，通常情况下不建议修改，会导致大量老版本堆积起来（如果有大量 update 和 delete 语句）
 - 7.1.2 txn takes too much time。事务太长时间（超过 590s）没有提交，准备提交的时候报该错误。可以通过调大 [tikv-client] max-txn-time-use = 590 参数，以及调大 GC life time 来绕过该问题（如果确实有这个需求）。通常情况下建议看看业务是否真的需要执行这么长时间的事务
 - 7.1.3 coprocessor.go 报 request outdated。发往 TiKV 的 coprocessor 请求在 TiKV 端排队时间超过了 60s，直接返回该错误。需要排查 TiKV coprocessor 为什么排队这么严重。
+- 7.1.4 region_cache.go 大量报 switch region peer to next due to send request fail 且 error 信息是 context deadline exceeded。请求 TiKV 超时触发 region cache 切换请求其他节点，可以对日志中的 addr 字段继续 grep "\<addr\> cancelled" 根据 grep 结果:
+	- send request is cancelled。请求发送阶段超时，可以排查 grafana TiDB 面板 - Batch Client - Pending Request Count by TiKV 是否大于 128 来确定是否因发送远超 KV 处理能力导致发送堆积，如果 Pending Request 不多需要排查日志确认是否因为对应 KV 有运维变更导致短暂报出， 否则非预期，需报 bug
+	- wait response is cancelled。请求发送到 TiKV 后超时未收到 TiKV 相应需要排查对应地址 TiKV 时间和对应 region 在当时的 PD 和 KV 日志来确定为什么 KV 未及时响应。
+- 7.1.5 distsql.go 报 inconsistent index。数据索引疑似发生不一致，首先对报错的信息中 index 所在表执行 admin check table \<TableName\> 命令，如果检查失败则先通过 begin;update mysql.tidb set variable_value='72h' where variable_name='tikv_gc_life_time';commit; 命令关闭 GC 并按照TiDB 中[数据不一致问题的常用排查方法](https://docs.google.com/document/d/1re65mWZcIRD13EqKgi9qJU6mve6YhBDjw40vfLH8sXc/edit)进一步排查并向研发报 bug 
 
 ### 7.2 TiKV
 
@@ -346,4 +197,5 @@ ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
 - 7.2.3 TxnLockNotFound。事务提交太慢，过了 ttl（小事务默认 3s） 时间之后被其他事务回滚了，该事务会自动重试，通常情况下对业务无感知
 - 7.2.4 PessimisticLockNotFound。类似 TxnLockNotFound，悲观事务提交太慢被其他事务回滚了
 - 7.2.5 stale_epoch。请求的 epoch 太旧了，TiDB 会更新路由之后再重新发送请求，业务无感知。epoch 在 region 发生 split/merge 以及迁移副本的时候会变化。
-- 7.2.6 peer is not leader。请求发到了非 leader 的副本上，TiDB 会根据该错误更新本地路由（如果错误 response 里面携带了最新的 leader 是哪个副本这一信息）并且重新发送请求到最新 leader，一般情况下业务无感知。如果由于其他原因导致一些 region 一直没有 leader 导致，请参考 4.4
+- 7.2.6 peer is not leader。请求发到了非 leader 的副本上，TiDB 会根据该错误更新本地路由（如果错误 response 里面携带了最新的 leader 是哪个副本这一信息）并且重新发送请求到最新 leader，一般情况下业务无感知。在 3.0 后 TiDB 在原 leader 请求失败时会尝试其他 peer 也会导致 TiKV 频繁出现 not leader 日志, 可以通过排查 TiDB 对应 region 的 switch region peer to next due to send request fail 日志排查发送失败根本原因，参考 7.1.4。另外也可能是由于其他原因导致一些 region 一直没有 leader 导致，请参考 4.4
+
