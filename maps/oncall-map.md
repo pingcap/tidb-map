@@ -196,15 +196,23 @@
     - 存在表中没有主键且没有唯一索引，这种情况会导致 binlog 性能下降，建议加主键或唯一索引
     - 其他情况报 bug
 
-- 6.1.6 报错 `gen update sqls failed: table xxx: row data is corruption []`
+- 6.1.6 Pump 无法写 binlog，报错 no space left on device
+
+	- 本地磁盘空间不足，Pump 无法正常写 binlog 数据。需要清理磁盘空间，然后重启 Pump，见 [TOOL-570](https://internal.pingcap.net/jira/browse/TOOL-570)
+
+- 6.1.7 Pump 启动时报错 `fail to notify all living drainer`
+
+    - Pump 启动时需要通知所有 Online 状态的 Drainer，如果通知失败则会打印该错误日志。可以使用 binlogctl 工具查看所有 Drainer 的状态是否有异常，保证 Online 状态的 Drainer 都在正常工作。如果某个 Drainer 的状态和实际运行情况不一致，则使用 binlogctl 修改状态，然后再重启 Pump。见 [fail-to-notify-all-living-drainer](https://pingcap.com/docs-cn/stable/reference/tidb-binlog/troubleshoot/error-handling/#pump-%E5%90%AF%E5%8A%A8%E6%97%B6%E6%8A%A5%E9%94%99-fail-to-notify-all-living-drainer)
+
+- 6.1.8 报错 `gen update sqls failed: table xxx: row data is corruption []`
     
 	- 触发条件：上游做 Drop Column DDL 的时候同时在做这张表的 DML。已经在 v3.0.6 fix，见 [ONCALL-820](https://internal.pingcap.net/jira/browse/ONCALL-820)
 
-- 6.1.7 Drainer 同步卡住，进程活跃但 checkpoint 不更新
+- 6.1.9 Drainer 同步卡住，进程活跃但 checkpoint 不更新
 
 	- 已知 bug 在 v3.0.4 fix，见 [ONCALL-741](https://internal.pingcap.net/jira/browse/ONCALL-741)
 
-- 6.1.8 任何组件 panic
+- 6.1.10 任何组件 panic
     - 报 bug
 
 ### 6.2 DM 问题
