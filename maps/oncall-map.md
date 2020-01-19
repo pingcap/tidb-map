@@ -178,3 +178,20 @@
 
 ### 6.3 lightning 问题
 
+## 7. 常见日志分析
+
+### 7.1 TiDB
+
+- GC life time is shorter than transaction duration。事务执行时间太长，超过了 GC lifetime（默认 10min），可以通过修改 mysql.tidb 表来调整 life time，通常情况下不建议修改，会导致大量老版本堆积起来（如果有大量 update 和 delete 语句）
+- txn takes too much time。事务太长时间（超过 590s）没有提交，准备提交的时候报该错误。可以通过调大 [tikv-client] max-txn-time-use = 590 参数，以及调大 GC life time 来绕过该问题（如果确实有这个需求）。通常情况下建议看看业务是否真的需要执行这么长时间的事务
+- coprocessor.go 报 request outdated。发往 TiKV 的 coprocessor 请求在 TiKV 端排队时间超过了 60s，直接返回该错误。需要排查 TiKV coprocessor 为什么排队这么严重。
+
+### 7.2 TiKV
+
+- key is locked。读写冲突，读请求碰到还未提交的数据，需要等待其提交之后才能读。少量这个错误对业务无影响，大量出现这个错误说明业务读写冲突比较严重
+- write conflict。乐观事务中的写写冲突，同时多个事务对相同的 key 进行修改，只有一个事务会成功，其他事务会自动重取 timestamp 然后进行重试，不影响业务。如果业务冲突很严重可能会导致重试多次之后事务失败，这种情况下建议使用悲观锁。
+- TxnLockNotFound。事务提交太慢，过了 ttl（小事务默认 3s） 时间之后被其他事务回滚了，该事务会自动重试，通常情况下对业务无感知
+- PessimisticLockNotFound。类似 TxnLockNotFound，悲观事务提交太慢被其他事务回滚了
+- stale_epoch。请求的 epoch 太旧了，TiDB 会更新路由之后再重新发送请求，业务无感知。epoch 在 region 发生 split/merge 以及迁移副本的时候会变化。
+- peer is not leader。请求发到了非 leader 的副本上，TiDB 会根据该错误更新本地路由（如果错误 response 里面携带了最新的 leader 是哪个副本这一信息）并且重新发送请求到最新 leader，一般情况下业务无感知。如果由于其他原因导致一些 region 一直没有 leader 导致，请参考 4.4
+
