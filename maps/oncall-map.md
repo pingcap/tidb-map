@@ -39,10 +39,12 @@
 ### 3.1 DDL
 
 - 修改 decimal 字段长度报错 ERROR 1105 (HY000): unsupported modify decimal column precision 见 ONCALL-1004
+
 - 一些原因需要下线某台 TiDB DDL owner 的行为
 
     - 与该台 TiDB 可以网络互通：curl -X POST http://{TiDBIP}:10080/ddl/owner/resign (可重新进行 owner 选举)
     - 与该台 TiDB 不可以网络互通，需旁路下线：tidb-ctl etcd delowner [LeaseID] [flags] + ownerKey (从 etcd 上直删，之后也会重新选举)
+
 - 常见的 Information schema is changed 错误原因
 
     - 执行的 DML 所涉及的表和集群中正在执行的 DDL 表相同，会报此错误。（admin show ddl job 可查看正在执行的 ddl job）
