@@ -42,6 +42,28 @@
 
 ### 3.2 OOM 问题
 
+- 现象
+
+	- 客户端：客户端收到 tidb-server 报错 "ERROR 2013 (HY000): Lost connection to MySQL server during query"
+	- 日志
+
+		- `dmesg -T | grep tidb-server` 结果中有事故发生附近时间点的 OOM-killer 的日志
+		-  tidb.log 中可以 grep 到事故发生后附近时间的 "Welcome to TiDB" 的日志（即 tidb-server 发生重启） 
+		-  tidb_stderr.log 中能 grep 到 "fatal error: runtime: out of memory" 或 "cannot allocate memory" 
+		-  v2.1.8 及其之前的版本，tidb_stderr.log 中能 grep 到 “fatal error: stack overflow”
+
+	- 监控：tidb-server 实例所在机器可用内存迅速回升
+
+- 定位造成 OOM 的 SQL(目前所有版本都无法完成精准定位，需要在发现 SQL 后再做进一步分析确认 OOM 是否确由该 SQL 造成)
+
+	- >= v3.0.0 的版本, 可以在 tidb.log 中 grep “expensive_query”，该 log 会记录运行超时、或使用内存超过阈值的 SQL。
+	- < v3.0.0 的版本, 通过 grep “memory exceeds quota” 定位运行时内存超限的 SQL。
+	- 注：单条 SQL 内存阈值默认值为 32GB，可通过 tidb_mem_quota_query 系统变量进行设置，作用域 SESSION， 单位 Byte。也可以通过配置项热加载的方式，对配置文件中的 mem-quota-query 项进行修改，单位 Byte。
+
+- 缓解 OOM 问题
+
+	- 通过开启 SWAP 的方式，可以缓解由于大查询使用内存过多而造成的 OOM 问题。但该方法会在内存空间不足时，由于存在 IO 开销，因此大查询性能造成一定影响。性能回退程度受剩余内存量、读写盘速度影响。
+
 ### 3.3 执行计划不对
 
 - 统计信息不准
