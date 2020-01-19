@@ -40,18 +40,16 @@
 
 - 修改 decimal 字段长度报错 ERROR 1105 (HY000): unsupported modify decimal column precision 见 ONCALL-1004
 
--  TiDB DDL job 卡住不动 / 执行很慢
+-  TiDB DDL job 卡住不动 / 执行很慢（通过 admin show ddl jobs 可以查看 ddl 进度）
 
     - 原因1：与外部组件（PD / TiKV）的网络问题
     - 原因2：TiDB 内部自身负载很重（高并发下可能起了很多协程）
-    - 原因3：早期版本 PD 实例删除 TiDB key 无效的问题，会导致每次 DDL 变更都需要等 2 个 lease（很慢） 
-    - 其他未知原因
+    - 原因3：早期版本（2.1.14 & 3.0.0-rc1 之前） PD 实例删除 TiDB key 无效的问题，会导致每次 DDL 变更都需要等 2 个 lease（很慢） 
+    - 其他未知原因（请上报 bug 到 github.com/pingcap/tidb）
     - 方案：第 1 种原因需要检查与外部组件的网络问题；第 2，3 种原因已经修复，需要升级到高版本；其他原因可选择以下兜底方案进行 ddl owner 迁移
-   
-> **ddl owner 迁移方案：**
->
-> - 1：与该台 TiDB 可以网络互通：curl -X POST http://{TiDBIP}:10080/ddl/owner/resign (可重新进行 owner 选举)
-> - 2：与该台 TiDB 不可以网络互通，需旁路下线：tidb-ctl etcd delowner [LeaseID] [flags] + ownerKey (从 etcd 上直删，之后也会重新选举)
+    - ddl owner 迁移方案
+        - 1：与该台 TiDB 可以网络互通：curl -X POST http://{TiDBIP}:10080/ddl/owner/resign (可重新进行 owner 选举)
+        - 2：与该台 TiDB 不可以网络互通，需旁路下线：tidb-ctl etcd delowner [LeaseID] [flags] + ownerKey (从 etcd 上直删，之后也会重新选举)
 
 
 - TiDB 日志中报 "information schema is changed" 的错误
@@ -60,10 +58,7 @@
     - 原因2：当前执行的 DML 时间太久，且这段时间内执行了很多 DDL（新版本 `lock table` 也可），导致中间 `schema` 版本变更超过 1024
     - 原因3：当前执行 DML 请求的 TiDB 实例长时间不能 load 到新的 `schema information` （与 PD 或者 TiKV 网络问题等都会导致此问题），而这段时间内执行了很多 DDL 语句（也包括 `lock table` 语句），导致中间 `schema` 版本变更超过 100（目前我们没有按 `schema` 版本去获取信息）
     - 方案：前 2 种原因都不会导致业务问题，相应的 DML 会在失败后重试；第 3 种原因需要检查 TiDB 实例和 PD 及 TiKV 的网络情况
-
-> **背景知识：**
->
-> schema version 的增长数量与每个 DDL 变更操作的 `schema state` 个数一致， 列如：`create table` 操作会有 1 个版本变更 / `add column` 操作会有 4 个版本变更（详情可以 online schema change）。所以太多的 column 变更操作会导致 schema version 增长的很快。
+    - 背景知识：schema version 的增长数量与每个 DDL 变更操作的 `schema state` 个数一致， 列如：`create table` 操作会有 1 个版本变更 / `add column` 操作会有 4 个版本变更（详情可以 [online schema change](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/41376.pdf)）。所以太多的 column 变更操作会导致 schema version 增长的很快。
 
 - TiDB 日志中报 "information schema is out of date" 的错误
     
