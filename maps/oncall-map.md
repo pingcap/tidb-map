@@ -340,7 +340,7 @@ ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
 - 7.1.3 coprocessor.go 报 request outdated。发往 TiKV 的 coprocessor 请求在 TiKV 端排队时间超过了 60s，直接返回该错误。需要排查 TiKV coprocessor 为什么排队这么严重。
 - 7.1.4 region_cache.go 大量报 switch region peer to next due to send request fail 且 error 信息是 context deadline exceeded。请求 TiKV 超时触发 region cache 切换请求其他节点，可以对日志中的 addr 字段继续 grep "\<addr\> cancelled" 根据 grep 结果:
 	- send request is cancelled。请求发送阶段超时，可以排查 grafana TiDB 面板 - Batch Client - Pending Request Count by TiKV 是否大于 128 来确定是否因发送远超 KV 处理能力导致发送堆积，如果 Pending Request 不多需要排查日志确认是否因为对应 KV 有运维变更导致短暂报出， 否则非预期，需报 bug
-	- wait response is cancelled。请求发送到 TiKV 后超时未收到 TiKV 相应需要排查对应地址 TiKV 时间和对应 region 在当时的 PD 和 KV 日志来确定为什么 KV 未及时响应。
+	- wait response is cancelled。请求发送到 TiKV 后超时未收到 TiKV 相应需要排查对应地址 TiKV 响应时间和对应 region 在当时的 PD 和 KV 日志来确定为什么 KV 未及时响应。
 - 7.1.5 distsql.go 报 inconsistent index。数据索引疑似发生不一致，首先对报错的信息中 index 所在表执行 admin check table \<TableName\> 命令，如果检查失败则先通过 begin;update mysql.tidb set variable_value='72h' where variable_name='tikv_gc_life_time';commit; 命令关闭 GC 并按照TiDB 中[数据不一致问题的常用排查方法](https://docs.google.com/document/d/1re65mWZcIRD13EqKgi9qJU6mve6YhBDjw40vfLH8sXc/edit)进一步排查并向研发报 bug
 
 ### 7.2 TiKV
