@@ -175,6 +175,50 @@
 	- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
 
 ### 6.2 DM 问题
+- 6.2.1 执行 query-status 或查看日志时出现 Access denied for user 'root'@'172.31.43.27' (using password: YES)
+    - 在所有 DM 配置文件中，数据库相关的密码都必须使用经 dmctl 加密后的密文（若数据库密码为空，则无需加密）
+
+    - 在 DM 运行过程中，上下游数据库的用户必须具备相应的读写权限。在启动同步任务过程中，DM 会自动进行相应权限的检查 [前置检查](https://pingcap.com/docs-cn/stable/reference/tools/data-migration/precheck/#%E4%B8%8A%E6%B8%B8-mysql-%E5%AE%9E%E4%BE%8B%E9%85%8D%E7%BD%AE%E5%89%8D%E7%BD%AE%E6%A3%80%E6%9F%A5)
+
+    - 同一套 DM 集群，混合部署不同版本的 DM-worker/DM-master/dmctl，见 [asktug-1049](https://asktug.com/t/dm1-0-0-ga-access-denied-for-user/1049/5)
+
+
+- 6.2.2 DM 同步任务中断并包含 driver: bad connection 错误
+    - 发生 driver: bad connection 错误时，通常表示 DM 到下游 TiDB 的数据库连接出现了异常（如网络故障、TiDB 重启等）且当前请求的数据暂时未能发送到 TiDB
+
+        - 1.0.0 GA 之前版本，DM 发生该类型错误时，需要先使用 stop-task 停止任务后再使用 start-task 重启任务。
+
+        - 1.0.0 GA 版本，增加对此类错误的自动重试机制，见 [pr 265](https://github.com/pingcap/dm/pull/265)
+
+- 6.2.3 同步任务中断并包含 invalid connection 错误
+
+    - 发生 invalid connection 错误时，通常表示 DM 到下游 TiDB 的数据库连接出现了异常（如网络故障、TiDB 重启、TiKV busy 等）且当前请求已有部分数据发送到了 TiDB。由于 DM 中存在同步任务并发向下游复制数据的特性，因此在任务中断时可能同时包含多个错误（可通过 query-status 或 query-error 查询当前错误）。
+
+        - 如果错误中仅包含 invalid connection 类型的错误且当前处于增量复制阶段，则 DM 会自动进行重试。
+
+        - 如果 DM 由于版本问题（1.0.0-rc.1 后引入自动重试）等未自动进行重试或自动重试未能成功，则可尝试先使用 stop-task 停止任务，然后再使用 start-task 重启任务。
+
+- 6.2.4 relay 处理单元报错 event from * in * diff from passed-in event * 或同步任务中断并包含 get binlog error ERROR 1236 (HY000)、binlog checksum mismatch, data may be corrupted 等 binlog 获取或解析失败错误
+
+    - 在 DM 进行 relay log 拉取与增量同步过程中，如果遇到了上游超过 4GB 的 binlog 文件，就可能出现这两个错误。原因是 DM 在写 relay log 时需要依据 binlog position 及文件大小对 event 进行验证，且需要保存同步的 binlog position 信息作为 checkpoint。但是 MySQL binlog position 官方定义使用 uint32 存储，所以超过 4G 部分的 binlog position 的 offset 值会溢出，进而出现上面的错误。
+
+        - 对于 relay 处理单元， [可通过官网步骤进行手动处理](https://pingcap.com/docs-cn/stable/reference/tools/data-migration/troubleshoot/error-handling/)
+
+        - 对于 binlog replication 处理单元，[可通过官网步骤进行手动处理](https://pingcap.com/docs-cn/stable/reference/tools/data-migration/troubleshoot/error-handling/)
+
+- 6.2.5 DM 同步中断，日志报错 ERROR 1236 (HY000) The slave is connecting using CHANGE MASTER TO MASTER_AUTO_POSITION = 1, but the master has purged binary logs containing GTIDs that the slave requires.
+    - 检查 master 的 binlog 是否被 purge
+
+    - 检查 relay.meta 中记录的位点信息
+        - relay.meta 中记录空的 GTID 信息，DM-worker 进程在退出时、以及定时（30s）会把内存中的 gtid 信息保存到 relay.meta 中，在没有获取到上游 GTID 信息的情况下，把空的 GTID 信息保存到了 relay.meta 中。见[ONCALL-772](https://internal.pingcap.net/jira/browse/ONCALL-772)
+
+        - relay.meta 中记录的 binlog event 不完整触发 recover 流程后记录错误的 GTID 信息，该问题可能会在 1.0.2 之前的版本遇到，已在 1.0.2 版本修复。见[ONCALL-764](https://internal.pingcap.net/jira/browse/ONCALL-764)
+
+- 6.2.6 DM 同步报错 Error 1366: incorr
+ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
+    - 该值 mysql 8.0 和 tidb 都不能写入成功，但是 mysql 5.7 可以写入成功。可以开启 tidb_skip_utf8_check 参数跳过数据格式检查。
+
+
 
 ### 6.3 lightning 问题
 
