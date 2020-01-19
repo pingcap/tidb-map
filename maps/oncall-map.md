@@ -50,13 +50,13 @@
 	- 慢日志中 SQL 执行时间 Scan Keys 数目较大
 
 - 3.3.2 排查执行计划问题
-	- explain analyze。在执行时间可以接受的情况下，对比 explain analyze 结果中 count 和 execution info 中 rows 的数目差距；如果在 TableScan/IndexScan 行上发现比较大的差距，很大可能是统计信息出问题；如果在其他行上发现较大差距，则也有可能是非统计信息问题。
+	- explain analyze SQL。在执行时间可以接受的情况下，对比 explain analyze 结果中 count 和 execution info 中 rows 的数目差距；如果在 TableScan/IndexScan 行上发现比较大的差距，很大可能是统计信息出问题；如果在其他行上发现较大差距，则也有可能是非统计信息问题。
 	- select count(`*`)。在执行计划中包含 join 等情况下，explain analyze 可能耗时过长；此时可以通过对 TableScan/IndexScan 上的条件进行 select count(`*`)，并对比 explain 结果中的 row count 信息，确定是不是统计信息的问题
 
 - 3.3.3 缓解问题
 	- 3.0 版本以及以上版本可以使用 SQL Bind 功能固定执行计划
-	- 更新统计信息。在大致确定问题是由统计信息导致的情况下，先 dump 统计信息保留现场。如果统计信息是由于过期导致，例如 show stats_meta 中 modif
-	 count / row count 大于某个值（例如 0.3）或者表中存在时间列的索引情况下，可以先尝试 analyze table 恢复；如果配置了 auto analyze，可以查看系统变量 tidb_auto_analyze_ratio 是否过大，以及当前时间是否在 tidb_auto_analyze_start_time 和 tidb_auto_analyze_end_time 范围内。
+	- 更新统计信息。在大致确定问题是由统计信息导致的情况下，先 [dump 统计信息](https://github.com/pingcap/docs-cn/blob/master/dev/reference/performance/statistics.md#%E5%AF%BC%E5%87%BA%E7%BB%9F%E8%AE%A1%E4%BF%A1%E6%81%AF)保留现场。如果统计信息是由于过期导致，例如 show stats_meta 中 modify
+	 count / row count 大于某个值（例如 0.3）或者表中存在时间列的索引情况下，可以先尝试 analyze table 恢复；如果配置了 auto analyze，可以查看系统变量 tidb_auto_analyze_ratio 是否过大（例如大于 0.3），以及当前时间是否在 tidb_auto_analyze_start_time 和 tidb_auto_analyze_end_time 范围内。
   - 其他情况需报 bug
 
 ## 4. TiKV 问题
