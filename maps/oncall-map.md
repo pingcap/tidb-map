@@ -39,7 +39,7 @@
 ### 3.1 DDL
 
 - 修改 decimal 字段长度报错 ERROR 1105 (HY000): unsupported modify decimal column precision 见 ONCALL-1004
-- Error 1105: Information schema is out of date 。写入数据时，出现该报错意味着该 TiDB 节点无法加载 load 到最新的 schema 版本信息，或者加载最新 Schema 版本信息超时（最大2*lease)，该条 SQL 会失败。
+- Error 1105: Information schema is out of date 。写入数据时，出现该报错意味着该 TiDB 节点无法加载到最新的 schema 版本信息，或者加载最新 Schema 版本信息超时（最大2*lease，默认 45s)，该条 SQL 会失败。
    - 可能的原因是
       - 执行此 DML 的 TiDB 被 kill 后准备退出，且此 DML 对应的事务执行时间超过一个 DDL lease，在事务提交时会报这个错误。
       - TiDB 在执行此 DML 时，有一段时间内连不上 PD 或者 TiKV，导致 TiDB 超过一个 DDL lease 时间没有 load schema，或者导致 TiDB 断开与 PD 之间带 keep alive 设置的连接。
