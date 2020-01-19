@@ -166,13 +166,46 @@
 
 ### 6.1 binlog 问题
 
-- 6.1.1 Drainer 中的 sarama 报 EOF 错误
+- 6.1.1 Pump/Drainer Status 中 Update Time 正常更新，日志中也没有异常，但下游没有数据写入
+    
+	- TiDB 配置中没有开启 binlog，需要修改 TiDB 配置 `[binlog]`
+
+- 6.1.2 Drainer 中的 sarama 报 EOF 错误
 
 	- Drainer 使用的 Kafka 客户端版本和 Kafka 版本不匹配，需要修改配置 `kafka-version`, 见 [TOOL-199](https://internal.pingcap.net/jira/browse/TOOL-199)
 
-- 6.1.2 Drainer 写 kafka 失败然后 panic，kafka 报 Message was too large 错误
+- 6.1.3 Drainer 写 kafka 失败然后 panic，kafka 报 Message was too large 错误
 
 	- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka message.max.bytes 等配置解决，见 [ONCALL-789](https://internal.pingcap.net/jira/browse/ONCALL-789)
+
+- 6.1.4 上下游数据不一致
+
+    - drainer log 中有 duplicate key 报错
+      - 可能是下游有其他数据源写入，导致 drainer 写入报主键冲突，drainer 重启后进入 safe-mode 模式，使用 REPLACE 强制写下游，有可能覆盖掉其他数据。见 [ONCALL-584](https://internal.pingcap.net/jira/browse/ONCALL-584)
+    - 部分 TiDB 节点没有开启 binlog。访问 http://127.0.0.1:10080/info/all 接口可以检查所有节点的 Binlog 状态（TiDB Version >= v3.0.6)。
+    - 部分 TiDB 节点进入 ignore binlog 状态。访问 http://127.0.0.1:10080/info/all 接口可以检查所有节点的 Binlog 状态（TiDB Version >= v3.0.6)。
+	- 上下游 timestamp 列的值不一致
+    	- 时区问题，需要确保 drainer 和上下游数据库时区一致，drainer 通过 `/etc/localtime` 获取时区，不支持 `TZ` 环境变量，见 [ONCALL-826](https://internal.pingcap.net/jira/browse/ONCALL-826)
+    	- TiDB 中 timestamp 的默认值为 null，mysql5.7 中 timestamp 默认值为当前时间（mysql8 无此问题），因此在上游写入 null 的 timestamp 且下游是 mysql57 时，timestamp 列数据不一致。在开启 binlog 前，在上游执行 `set @@global.explicit_defaults_for_timestamp=on;` 可解决问题，见 [TOOL-1539](https://internal.pingcap.net/jira/browse/TOOL-1539)
+    - 其他情况报 bug
+
+- 6.1.5 同步慢
+    
+	- 下游是 TiDB/MySQL，上游频繁做 DDL，参见 [ONCALL-1023](https://internal.pingcap.net/jira/browse/ONCALL-1023)
+    - 下游输出到文件，检查目标磁盘/网络盘
+    - 存在表中没有主键且没有唯一索引，这种情况会导致 binlog 性能下降，建议加主键或唯一索引
+    - 其他情况报 bug
+
+- 6.1.6 报错 `gen update sqls failed: table xxx: row data is corruption []`
+    
+	- 触发条件：上游做 Drop Column DDL 的时候同时在做这张表的 DML。已经在 v3.0.6 fix，见 [ONCALL-820](https://internal.pingcap.net/jira/browse/ONCALL-820)
+
+- 6.1.7 Drainer 同步卡住，进程活跃但 checkpoint 不更新
+
+	- 已知 bug 在 v3.0.4 fix，见 [ONCALL-741](https://internal.pingcap.net/jira/browse/ONCALL-741)
+
+- 6.1.8 任何组件 panic
+    - 报 bug
 
 ### 6.2 DM 问题
 
