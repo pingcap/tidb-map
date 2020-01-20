@@ -331,6 +331,33 @@ ect utf8 value eda0bdedb29d(\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd)
 
 ### 6.3 lightning 问题
 
+- 6.3.1 导入速度太慢
+    - region-concurrency 设定太高，线程间争用资源反而减低了效率。排查方法 1）从日志的开头搜寻 region-concurrency 能知道 Lightning 读到的参数是多少。2）如果 Lightning 与其他服务（如 Importer）共用一台服务器，必需手动将 region-concurrency 设为该服务器 CPU 数量的 75%。3）如果 CPU 设有限额（例如从 K8s 指定的上限），Lightning 可能无法自动判断出>来，此时亦需要手动调整 region-concurrency。
+    - 表结构太复杂。每条索引都会额外增加 KV 对。如果有 N 条索引，实际导入的大小就差不多是 Mydumper 文件的 N+1 倍。如果索引不太重要，可以考虑先从 schema 去掉，待导入完成后再使用 CREATE INDEX 加回去。
+    - Lightning 版本太旧。尝试使用最新的版本，可能会有改善。
+
+- 6.3.2 checksum failed: checksum mismatched remote vs local
+    - 原因1：这张表可能本身已有数据，影响最终结果。
+    - 原因2：如果目标数据库的校验和全是 0，表示没有发生任何导入，有可能是集群太忙无法接收任何数据。
+    - 原因3：如果数据源是由机器生成而不是从 Mydumper 备份的，需确保数据符合表的限制，例如：1）自增 (AUTO_INCREMENT) 的列需要为正数，不能为 0。2）单一键和主键 (UNIQUE and PRIMARY KEYs) 不能有重复的值。
+    - 解决办法：参考[官网步骤处理](https://pingcap.com/docs-cn/stable/how-to/troubleshoot/tidb-lightning/#checksum-failed-checksum-mismatched-remote-vs-local) 
+
+- 6.3.3 Checkpoint for … has invalid status:（错误码）
+    - 原因：断点续传已启用。Lightning 或 Importer 之前发生了异常退出。为了防止数据意外损坏，Lightning 在错误解决以前不会启动。错误码是小于 25 的整数，可能的取值是 0、3、6、9>、12、14、15、17、18、20、21。整数越大，表示异常退出所发生的步骤在导入流程中越晚。
+    - 解决办法：参考[官网步骤处理](https://pingcap.com/docs-cn/stable/how-to/troubleshoot/tidb-lightning/#checkpoint-for--has-invalid-status%E9%94%99%E8%AF%AF%E7%A0%81) 
+
+- 6.3.4 ResourceTemporarilyUnavailable("Too many open engines …: 8")
+    - 原因：并行打开的引擎文件 (engine files) 超出 tikv-importer 里的限制。这可能由配置错误引起。即使配置没问题，如果 tidb-lightning 曾经异常退出，也有可能令引擎文件残留在打开的状态，占据可用的数量。
+    - 解决办法：参考[官网步骤处理](https://pingcap.com/docs-cn/stable/how-to/troubleshoot/tidb-lightning/#resourcetemporarilyunavailabletoo-many-open-engines--8)
+
+- 6.3.5 cannot guess encoding for input file, please convert to UTF-8 manually
+    - 原因：Lightning 只支持 UTF-8 和 GB-18030 编码的表架构。此错误代表数据源不是这里任一个编码。也有可能是文件中混合了不同的编码，例如，因为在不同的环境运行过 ALTER TABLE，使表架构同时出现 UTF-8 和 GB-18030 的字符。
+    - 解决办法：参考[官网步骤处理](https://pingcap.com/docs-cn/stable/how-to/troubleshoot/tidb-lightning/#cannot-guess-encoding-for-input-file-please-convert-to-utf-8-manually)
+
+- 6.3.6 [sql2kv] sql encode error = [types:1292]invalid time format: '{1970 1 1 0 45 0 0}'
+    - 原因：一个 timestamp 类型的时间戳记录了不存在的时间值。时间值不存在是由于夏时制切换或超出支持的范围（1970 年 1 月 1 日至 2038 年 1 月 19 日）。
+    - 解决办法：参考[官网步骤处理](https://pingcap.com/docs-cn/stable/how-to/troubleshoot/tidb-lightning/#sql2kv-sql-encode-error--types1292invalid-time-format-1970-1-1-0-45-0-0)
+
 ## 7. 常见日志分析
 
 ### 7.1 TiDB
