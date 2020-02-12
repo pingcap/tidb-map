@@ -48,7 +48,7 @@ merge-schedule-limit: 200
 >`split-region-on-table = false`
 >```
 
-- 3. 目前 v3.0.4 和 v2.1.16 以前的版本， region 的统计 `approximate` 由于 BUG 造成统计有问题，造成 `keys` 很大，可以把 `max-merge-region-keys` 这个条件放开，调到很大的值（例如调整为默认值 20w 的 10 倍，`max-merge-region-keys` = 2000000）。
+- 3. 目前 v3.0.4 和 v2.1.16 以前的版本， region 的统计 `approximate` 由于 BUG 造成统计有问题，造成 `keys` 很大，可以把 `max-merge-region-keys` 这个条件放开，调到很大的值（例如调整为默认值 20w 的 1000 倍，`max-merge-region-keys` = 200000000）。
 
 - 4. 如果 `merge opm` 达到 几百～上千 `opm` 依然无法满足，可以调整
 `"patrol-region-interval": "100ms"`到 `"patrol-region-interval": "10ms"` ，这个能加快巡检 region 的速度，但是会消耗更多的 CPU。
