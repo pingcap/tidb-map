@@ -17,6 +17,7 @@ v2.1.14
 
 
 ![region healthy](./resources/case991-region-healthy.png)
+
 Pending 和 Down 是 Peer 可能出现的两种特殊状态。其中 Pending 表示 Follower 或 Learner 的 raft log 与 Leader 有较大差距，Pending 状态的 Follower 无法被选举成 Leader。Down 是指 Leader 长时间没有收到对应 Peer 的消息，通常意味着对应节点发生了宕机或者网络隔离。
 
 怀疑当时 tikv 节点发生了重启。
