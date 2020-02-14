@@ -23,3 +23,14 @@ A map to guide contributors how to contribute.
 | Engine | | [Engine traits](https://github.com/tikv/tikv/tree/master/components/engine_traits), [Engine rocks](https://github.com/tikv/tikv/tree/master/components/engine_rocks) | Rust, RocksDB | | [Engine abstraction](https://github.com/tikv/tikv/issues/6402) | |
 | Coprocessor | | [TiDB query](https://github.com/tikv/tikv/tree/master/components/tidb_query), [TiDB query codegen](https://github.com/tikv/tikv/tree/master/components/tidb_query_codegen), [TiDB query datatype](https://github.com/tikv/tikv/tree/master/components/tidb_query_datatype) | Rust | [TiKV source code reading : Coprocessor Overview(CN)](https://pingcap.com/blog-cn/tikv-source-code-reading-14/), [TiKV source code reading : Coprocessor Executor](https://pingcap.com/blog-cn/tikv-source-code-reading-16/) | Coprocessor [Issues](https://github.com/tikv/tikv/issues?q=is%3Aopen+is%3Aissue+label%3A%22C%3A+Copr%22) | |
 | Backup | | [Backup source code](https://github.com/tikv/tikv/tree/master/components/backup) | | | | |
+
+## [PD](https://github.com/pingcap/pd) Placement driver for TiKV
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| API | HTTP interfaces for interacting with PD server | [API](https://github.com/pingcap/pd/tree/master/server/api)| Golang | [Golang http lib](https://golang.org/pkg/net/http/), [Golang Mux](https://www.gorillatoolkit.org/pkg/mux) | OpenAPI Specification | |
+| TSO | Centralized timestamp allocation | [TSO](https://github.com/pingcap/pd/tree/master/server/tso) | Golang, etcd | [Lamport timestamps](https://en.wikipedia.org/wiki/Lamport_timestamps), [etcd clientv3](https://godoc.org/go.etcd.io/etcd/clientv3) | [Optimize the performance](https://github.com/pingcap/pd/issues/1847) | |
+| Core | Basic facilities | [Core](https://github.com/pingcap/pd/tree/master/server/core) | Golang | [PD best practice(CN)](https://pingcap.com/blog-cn/best-practice-pd/)| Improve hotspot recognition; adaptive Scheduling; scheduling according to region histogram | |
+| Statistics | Statistics which the scheduling relies on | [Statistics](https://github.com/pingcap/pd/tree/master/server/statistics) | Golang | Ditto | Ditto | |
+| Scheduler | Controllers of scheduling | [Schedulers](https://github.com/pingcap/pd/tree/master/server/schedulers) | Golang | Ditto | Ditto | |
+| Schedule | Components related to scheduling like selector, filter, etc. | [Schedule](https://github.com/pingcap/pd/tree/master/server/schedule) | Golang | Ditto | Ditto | |
