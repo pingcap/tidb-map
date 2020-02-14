@@ -34,3 +34,21 @@
 | Statistics | Statistics which the scheduling relies on | [Statistics](https://github.com/pingcap/pd/tree/master/server/statistics) | Golang | Ditto | Ditto | |
 | Scheduler | Controllers of scheduling | [Schedulers](https://github.com/pingcap/pd/tree/master/server/schedulers) | Golang | Ditto | Ditto | |
 | Schedule | Components related to scheduling like selector, filter, etc. | [Schedule](https://github.com/pingcap/pd/tree/master/server/schedule) | Golang | Ditto | Ditto | |
+
+## TiKV Clients
+
+| *Module* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- |
+| [Rust Client](https://github.com/tikv/client-rust) | Rust, TiKV concepts, Transaction model | [TiKV documentation](https://tikv.org/docs/3.0/concepts/overview/), [Rust book](https://doc.rust-lang.org/book/), [Practical networked applications in Rust](https://github.com/pingcap/talent-plan), [Percolator paper](https://research.google/pubs/pub36726/) | [Issues](https://github.com/tikv/client-rust/issues) | |
+| [Go Client](https://github.com/tikv/client-go) | Golang, TiKV concepts, Transaction model | Ditto | [Issues](https://github.com/tikv/client-go/issues) | |
+| [Java Client](https://github.com/tikv/client-java) | Java, TiKV concepts, Transaction model | Ditto | | |
+| [C Client](https://github.com/tikv/client-c) | C/C++, TiKV concepts, Transaction model | Ditto| | |
+
+## Libraries depended by TiKV
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| [grpc-rs](https://github.com/tikv/grpc-rs) | The gRPC library for Rust built on C Core library and futures | grpc [c bindings](https://github.com/tikv/grpc-rs/grpc-sys), grpc [rust wrapper](https://github.com/tikv/grpc-rs) | C++, Rust | grpc [introduction](https://grpc.io), Rust [bindgen](https://rust-lang.github.io/rust-bindgen/), Rust [async book](https://rust-lang.github.io/async-book/01_getting_started/01_chapter.html),  Source code reading: [grpc-rs(CN)](https://pingcap.com/blog-cn/tikv-source-code-reading-8/) | Load balance; reflection; custom metadata; migrate to async/await|  |
+| [raft-rs](https://github.com/tikv/raft-rs) | Raft distributed consensus algorithm implemented in Rust | | Rust, Raft | Raft [paper](https://raft.github.io/raft.pdf), Raft [implementation in etcd](https://github.com/etcd-io/etcd/tree/master/raft) | | |
+| [rust-rocksdb](https://github.com/tikv/rust-rocksdb) | Rust wrapper for RocksDB | | Rust, C++, RocksDB | Rust [ffi](https://doc.rust-lang.org/nomicon/ffi.html), Rust [bindgen](https://rust-lang.github.io/rust-bindgen/), RocksDB [wiki](https://github.com/facebook/rocksdb/wiki) | Migrate bindgen to C++ | |
+| [Titan](https://github.com/tikv/titan) | A RocksDB plugin for key-value separation | | C++, LSM-tree, RocksDB| Titan storage [design and implementation](https://pingcap.com/blog/titan-storage-engine-design-and-implementation/), [WiscKey](https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf) Separating Keys from Values in SSD-conscious Storage, RocksDB [wiki](https://github.com/facebook/rocksdb/wiki)| | |
