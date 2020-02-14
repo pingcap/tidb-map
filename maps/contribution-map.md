@@ -1,6 +1,6 @@
-## A map to guide contributors how to contribute.
+# A map to guide contributors how to contribute.
 
-### [TiDB](https://github.com/pingcap/tidb) is an open-source distributed HTAP database compatible with the MySQL protocol
+## [TiDB](https://github.com/pingcap/tidb) is an open-source distributed HTAP database compatible with the MySQL protocol
 
 | *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
