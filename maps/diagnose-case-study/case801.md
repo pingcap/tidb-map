@@ -8,7 +8,7 @@
   2. 10 月 27 日 发现服务器宕机，将服务器重新拉起，此时距离 TiKV 实例宕机时间已经超过 30 分钟。重新拉起之后，到 28 日 16：30 之前，从监控可见进行了一段时间的补副本的操作。
   3. 10 月 28 日 16：30 左右开始，不再补副本，同时 PD 监控面板 Cluster --> Region health--> Miss peer 的数量在增加。
 
-    ![region health before](region_health_info_01.png)
+    ![region health before](resources/case801_01.png)
 
 ## 环境信息收集
 
@@ -137,4 +137,4 @@
 
 * 用户删除服务器堆积的大量无用日志之后，空间释放，开始自动补副本。
 
-  ![region health after](region_health_info_02.png)
+  ![region health after](resources/case801_02.png)
