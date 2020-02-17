@@ -52,11 +52,7 @@ region: 90496, error: StringError("[src/server/debug.rs:944]: invalid conf_ver")
 
 ![store 8 region 下线状态](./resources/case870-3.png)
 
-
 ### 版本： v3.0.2
-
-#### Region Merge 相关参数设置
-
 
 ### 分析步骤
 
@@ -70,7 +66,6 @@ region: 90496, error: StringError("[src/server/debug.rs:944]: invalid conf_ver")
 {"log":"[2019/11/19 20:00:08.999 +08:00] [INFO] [process.rs:179] [\"get snapshot failed\"] [err=\"Request(message: \\\"EpochNotMatch current epoch of region 90496 is conf_ver: 44 version: 174, but you sent conf_ver: 44 version: 176\\\" epoch_not_match { current_regions { id: 90496 start_key: 7480000000000000FF955F698000000000FF0000040380000000FF011AF03803800000FF0059C870AA038000FF0000091FB6AF0000FD end_key: 7480000000000000FF955F698000000000FF0000040380000000FF011C1D8E03800000FF0059F0F355038000FF000009247E460000FD region_epoch { conf_ver: 44 version: 174 } peers { id: 90497 store_id: 5 } peers { id: 90498 store_id: 8 } peers { id: 90499 store_id: 7 } } current_regions { id: 90433 start_key: 7480000000000000FF955F698000000000FF0000040380000000FF0119988B03800000FF005BC6258D038000FF00000918DAEE0000FD end_key: 7480000000000000FF955F698000000000FF0000040380000000FF011AF03803800000FF0059C870AA038000FF0000091FB6AF0000FD region_epoch { conf_ver: 53 version: 173 } peers { id: 90434 store_id: 5 } peers { id: 138440 store_id: 6 } peers { id: 152726 store_id: 4 } } })\"] [cid=18993540]\n","stream":"stderr","time":"2019-11-19T12:00:08.999923845Z"}
 ```
 
- 
 ### 结论
 
 - 从日志中发现 region 90496 的 leader 在 store id 5 上，region epoch 为：{44, 174}，follower 为 store 7/8。但是 pd 上 region epoch为 {44, 176} 比 store 5 新，导致 region 信息一直未更新，仍认为 store 7 是 leader，所以 transfer region 一直失败。问题触发原因试音为 Region Merge bug 引起的，已经在 v3.0.5 修复 https://github.com/tikv/tikv/pull/5512 。
