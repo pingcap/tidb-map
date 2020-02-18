@@ -52,3 +52,10 @@
 | [raft-rs](https://github.com/tikv/raft-rs) | Raft distributed consensus algorithm implemented in Rust | | Rust, Raft | Raft [paper](https://raft.github.io/raft.pdf), Raft [implementation in etcd](https://github.com/etcd-io/etcd/tree/master/raft) | | |
 | [rust-rocksdb](https://github.com/tikv/rust-rocksdb) | Rust wrapper for RocksDB | | Rust, C++, RocksDB | Rust [ffi](https://doc.rust-lang.org/nomicon/ffi.html), Rust [bindgen](https://rust-lang.github.io/rust-bindgen/), RocksDB [wiki](https://github.com/facebook/rocksdb/wiki) | Migrate bindgen to C++ | |
 | [Titan](https://github.com/tikv/titan) | A RocksDB plugin for key-value separation | | C++, LSM-tree, RocksDB| Titan storage [design and implementation](https://pingcap.com/blog/titan-storage-engine-design-and-implementation/), [WiscKey](https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf) Separating Keys from Values in SSD-conscious Storage, RocksDB [wiki](https://github.com/facebook/rocksdb/wiki)| | |
+
+## SIG - Special Interest Group
+
+| *SIG Name* | *Description* | *Join In* |
+| ---- | ---- | ---- |
+| Engine | Build a fast, reliable storage engine. Works included in repo [RocksDB](https://github.com/facebook/rocksdb), [Titan](https://github.com/tikv/titan), and [rust-rocksdb](https://github.com/tikv/rust-rocksdb), and etc. | https://tikv-wg.slack.com channel: engine-sig |
+| Coprocessor | TiKV Coprocessor is the computing component for TiDB's pushdown requests. | https://tikv-wg.slack.com channel: copr-sig |
