@@ -1,5 +1,28 @@
 # A map to guide contributors how to contribute.
 
+## Table of Contents
+
+<!-- vim-markdown-toc GFM -->
+
+* [TiDB is an open-source distributed HTAP database compatible with the MySQL protocol](#tidb-is-an-open-source-distributed-htap-database-compatible-with-the-mysql-protocol)
+* [TiKV, distributed transactional key-value database](#tikv-distributed-transactional-key-value-database)
+* [PD Placement driver for TiKV](#pd-placement-driver-for-tikv)
+* [TiKV Clients](#tikv-clients)
+* [Libraries depended by TiKV](#libraries-depended-by-tikv)
+* [Ecosystem Tools: DM Data Migration Platform](#ecosystem-tools-dm-data-migration-platform)
+* [Ecosystem Tools - Binlog : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization](#ecosystem-tools---binlog--a-tool-used-to-collect-and-merge-tidbs-binlog-for-real-time-data-backup-and-synchronization)
+* [Ecosystem Tools - Lightning: A high-speed data import tool for TiDB](#ecosystem-tools---lightning-a-high-speed-data-import-tool-for-tidb)
+* [Ecosystem Tools - BR: A command-line tool for distributed backup and restoration of the TiDB cluster data](#ecosystem-tools---br-a-command-line-tool-for-distributed-backup-and-restoration-of-the-tidb-cluster-data)
+* [TiDB on K8S/Docker : Creates and manages TiDB clusters running in Kubernetes](#tidb-on-k8sdocker--creates-and-manages-tidb-clusters-running-in-kubernetes)
+* [Deployment Tools - tidb-ansible: A tool to capture data change of TiDB cluster](#deployment-tools---tidb-ansible-a-tool-to-capture-data-change-of-tidb-cluster)
+* [Chaos-Mesh: A Chaos Engineering Platform for Kubernetes](#chaos-mesh-a-chaos-engineering-platform-for-kubernetes)
+* [Documentations](#documentations)
+* [AskTUG(CN)](#asktugcn)
+* [PingCAP University(CN)](#pingcap-universitycn)
+* [SIG - Special Interest Group](#sig---special-interest-group)
+
+<!-- vim-markdown-toc -->
+
 ## [TiDB](https://github.com/pingcap/tidb) is an open-source distributed HTAP database compatible with the MySQL protocol
 
 | *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
