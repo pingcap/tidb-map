@@ -69,6 +69,37 @@
 | DM-ansible | The ansible playbook for DM | [dm-ansible](https://github.com/pingcap/dm/tree/master/dm/dm-ansible) | DM, Ansible | Ditto | Ditto | |
 | DM-tracer | A DM-specific tracer framework | [dm-tracer](https://github.com/pingcap/dm/tree/master/dm/tracer)| Golang, gRPC, Protobuf | Ditto | Ditto | |
 
+## Ecosystem Tools - [Binlog](https://github.com/pingcap/tidb-binlog) : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Pump Client | Send Binlog to the appropriate Pump on TiDB | [pump_client](https://github.com/pingcap/tidb-tools/tree/master/tidb-binlog/pump_client), [binloginfo](https://github.com/pingcap/tidb/tree/master/sessionctx/binloginfo)| Golang, gRPC, etcd | TiDB [Binlog overview](https://pingcap.com/docs/stable/reference/tidb-binlog/overview/), TiDB source code reading: [Binlog(CN)](https://pingcap.com/blog-cn/#TiDB-Binlog-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB) | Help Wanted [Issues](https://github.com/pingcap/tidb-binlog/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) | |
+| Pump | Receive and store Binlogs, sorted by commitTS | [pump](https://github.com/pingcap/tidb-binlog/tree/master/pump) | Golang, LevelDB, etcd, gRPC | Ditto | Ditto | |
+| Drainer | Pull Binlog from Pump, do merge and sort, and then sync to downstream | [drainer](https://github.com/pingcap/tidb-binlog/tree/master/drainer) | Golang, Mysql, Kafka, gRPC | Ditto | Ditto | |
+
+## Ecosystem Tools - [Lightning](https://github.com/pingcap/tidb-lightning): A high-speed data import tool for TiDB
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Web Interface | | [web](https://github.com/pingcap/tidb-lightning/tree/master/web) | | | | |
+| CSV and SQL Parser | | [mydump](https://github.com/pingcap/tidb-lightning/tree/master/lightning/mydump) | | | | |
+| Delivery backend (output as SQL or as KV pairs) | | [backend](https://github.com/pingcap/tidb-lightning/tree/master/lightning/backend) | | | | |
+| Checkpoints | | [checkpoints](https://github.com/pingcap/tidb-lightning/tree/master/lightning/checkpoints) | | | | |
+| Configuration | | [config](https://github.com/pingcap/tidb-lightning/tree/master/lightning/config) | | | | |
+| Logging | | [log](https://github.com/pingcap/tidb-lightning/tree/master/lightning/log) | | | | |
+| Metrics | | [metric](https://github.com/pingcap/tidb-lightning/tree/master/lightning/metric) | | | | |
+| Workers (concurrency control) | | [worker](https://github.com/pingcap/tidb-lightning/tree/master/lightning/worker) | | | | |
+| Restore Driver | | [restore](https://github.com/pingcap/tidb-lightning/tree/master/lightning/restore) | | | | |
+| Utilities | | [common](https://github.com/pingcap/tidb-lightning/tree/master/lightning/common) | | | | |
+| Importer | | [import](https://github.com/tikv/importer/tree/master/src/import) | | | | |
+
+## Ecosystem Tools - [BR](https://github.com/pingcap/br): A command-line tool for distributed backup and restoration of the TiDB cluster data
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Backup | Backup data in cluster which has 3 mode: backup full cluster, backup specified DB and backup specified Table| [br/backup](https://github.com/pingcap/br/tree/master/pkg/backup), [tikv/backup](https://github.com/tikv/tikv/tree/master/components/backup) | gRPC, golang, rust | [backup-principle](https://pingcap.com/docs/dev/how-to/maintain/backup-and-restore/br/#backup-principle) | | |
+| Restore | Restore data to new cluster after backup, relatively can restore full cluster, restore specified DB and restore specified Table. | [br/restore](https://github.com/pingcap/br/tree/master/pkg/restore), [tikv/sst_importer](https://github.com/tikv/tikv/tree/master/components/sst_importer) | gRPC, golang, rust | [restoration-principle](https://pingcap.com/docs/dev/how-to/maintain/backup-and-restore/br/#restoration-principle) | | |
+
 ## SIG - Special Interest Group
 
 | *SIG Name* | *Description* | *Join In* |
