@@ -108,6 +108,36 @@
 | Advanced StatefulSet | This is an Advanced StatefulSet CRD implementation based on official StatefulSet in Kubernetes. In addition to the official StatefulSet, it can scale the set in an arbitrary way. | [advanced-statefulset](https://github.com/pingcap/advanced-statefulset) | Golang, Kubernetes | Kubernetes [Concepts](https://kubernetes.io/docs/concepts/), Kubernetes [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/), Kubernetes StatefulSet [Implementations](https://github.com/kubernetes/kubernetes/tree/master/pkg/controller/statefulset), PingCAP StatefulSet [Implementations](https://github.com/pingcap/advanced-statefulset/tree/master/pkg/controller/statefulset) | | |
 | TiDB Docker Compose | Docker compose files for TiDB. With it, you can quickly deploy a TiDB testing cluster with a single command. | [tidb-docker-compose](https://github.com/pingcap/tidb-docker-compose)| Docker, Docker Compose | how to [start tidb with tidb-docker-compose](https://pingcap.com/docs/stable/how-to/deploy/orchestrated/docker/), docker [get started](https://docs.docker.com/get-started/),  docker [compose](https://docs.docker.com/compose/)| | |
 
+## Deployment Tools - [tidb-ansible](https://github.com/pingcap/tidb-ansible): A tool to capture data change of TiDB cluster
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| tidb ansible | TiDB deployment operation and maintenance tools | | Ansible, Python, Jinja2, Shell | How to [deploy TiDB cluster through tidb-ansible](https://pingcap.com/docs-cn/stable/how-to/deploy/orchestrated/ansible/), Ansible [docs(en)](https://docs.ansible.com) and [docs(cn)](http://www.ansible.com.cn) | | |
+
+## [Chaos-Mesh](https://github.com/pingcap/chaos-mesh): A Chaos Engineering Platform for Kubernetes
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| chaos-mesh | | | go, kubenetes | | | |
+
+## Documentations
+
+| *Project* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- |
+| [Documentation(EN)](https://github.com/pingcap/docs) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md)| Fix typos or format (punctuation, space, indentation, code block, etc.); Fix or update inappropriate or outdated descriptions; Add missing content (sentence, paragraph, or a new document); Translate docs changes from English to Chinese; Submit, reply to, and resolve issues; (Advanced) Review Pull Requests| Chinese version done. To be translated. |
+| [Documentation(CN)](https://github.com/pingcap/docs-cn) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Chinese documentation style guide and template](https://github.com/pingcap/docs-cn/tree/master/resources), [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md) | Ibid, except for translating document changes from Chinese to English | [docs-cn readme](https://github.com/pingcap/docs-cn/blob/master/README.md), [docs-cn contribution guide](https://github.com/pingcap/docs-cn/blob/master/CONTRIBUTING.md) |
+
+## [AskTUG(CN)](https://asktug.com/)
+
+| *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- |
+| Anyone of ansible, linux, DM, Binlog, lightning, pd, tidb, tikv, grafana, prometheus | [TiDB DBA courses](https://university.pingcap.com/tidb-dba-courses/)| Help other TiDB users by answering questions; Publish practice articles of using TiDB or other databases | SOP, FAQ |
+
+## PingCAP [University(CN)](https://university.pingcap.com/)
+| *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- |
+| | | TiDB DBA Course Design; TiDB Contributor Course Design| |
+
 ## SIG - Special Interest Group
 
 | *SIG Name* | *Description* | *Join In* |
