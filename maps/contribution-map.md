@@ -42,7 +42,7 @@
 | [Rust Client](https://github.com/tikv/client-rust) | Rust, TiKV concepts, Transaction model | [TiKV documentation](https://tikv.org/docs/3.0/concepts/overview/), [Rust book](https://doc.rust-lang.org/book/), [Practical networked applications in Rust](https://github.com/pingcap/talent-plan), [Percolator paper](https://research.google/pubs/pub36726/) | [Issues](https://github.com/tikv/client-rust/issues) | |
 | [Go Client](https://github.com/tikv/client-go) | Golang, TiKV concepts, Transaction model | Ditto | [Issues](https://github.com/tikv/client-go/issues) | |
 | [Java Client](https://github.com/tikv/client-java) | Java, TiKV concepts, Transaction model | Ditto | | |
-| [C Client](https://github.com/tikv/client-c) | C/C++, TiKV concepts, Transaction model | Ditto| | |
+| [C Client](https://github.com/tikv/client-c) | C/C++, TiKV concepts, Transaction model | Ditto| [Issues](https://github.com/tikv/client-c/issues) | |
 
 ## Libraries depended by TiKV
 
