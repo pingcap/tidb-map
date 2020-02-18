@@ -69,6 +69,75 @@
 | DM-ansible | The ansible playbook for DM | [dm-ansible](https://github.com/pingcap/dm/tree/master/dm/dm-ansible) | DM, Ansible | Ditto | Ditto | |
 | DM-tracer | A DM-specific tracer framework | [dm-tracer](https://github.com/pingcap/dm/tree/master/dm/tracer)| Golang, gRPC, Protobuf | Ditto | Ditto | |
 
+## Ecosystem Tools - [Binlog](https://github.com/pingcap/tidb-binlog) : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Pump Client | Send Binlog to the appropriate Pump on TiDB | [pump_client](https://github.com/pingcap/tidb-tools/tree/master/tidb-binlog/pump_client), [binloginfo](https://github.com/pingcap/tidb/tree/master/sessionctx/binloginfo)| Golang, gRPC, etcd | TiDB [Binlog overview](https://pingcap.com/docs/stable/reference/tidb-binlog/overview/), TiDB source code reading: [Binlog(CN)](https://pingcap.com/blog-cn/#TiDB-Binlog-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB) | Help Wanted [Issues](https://github.com/pingcap/tidb-binlog/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) | |
+| Pump | Receive and store Binlogs, sorted by commitTS | [pump](https://github.com/pingcap/tidb-binlog/tree/master/pump) | Golang, LevelDB, etcd, gRPC | Ditto | Ditto | |
+| Drainer | Pull Binlog from Pump, do merge and sort, and then sync to downstream | [drainer](https://github.com/pingcap/tidb-binlog/tree/master/drainer) | Golang, Mysql, Kafka, gRPC | Ditto | Ditto | |
+
+## Ecosystem Tools - [Lightning](https://github.com/pingcap/tidb-lightning): A high-speed data import tool for TiDB
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Web Interface | | [web](https://github.com/pingcap/tidb-lightning/tree/master/web) | | | | |
+| CSV and SQL Parser | | [mydump](https://github.com/pingcap/tidb-lightning/tree/master/lightning/mydump) | | | | |
+| Delivery backend (output as SQL or as KV pairs) | | [backend](https://github.com/pingcap/tidb-lightning/tree/master/lightning/backend) | | | | |
+| Checkpoints | | [checkpoints](https://github.com/pingcap/tidb-lightning/tree/master/lightning/checkpoints) | | | | |
+| Configuration | | [config](https://github.com/pingcap/tidb-lightning/tree/master/lightning/config) | | | | |
+| Logging | | [log](https://github.com/pingcap/tidb-lightning/tree/master/lightning/log) | | | | |
+| Metrics | | [metric](https://github.com/pingcap/tidb-lightning/tree/master/lightning/metric) | | | | |
+| Workers (concurrency control) | | [worker](https://github.com/pingcap/tidb-lightning/tree/master/lightning/worker) | | | | |
+| Restore Driver | | [restore](https://github.com/pingcap/tidb-lightning/tree/master/lightning/restore) | | | | |
+| Utilities | | [common](https://github.com/pingcap/tidb-lightning/tree/master/lightning/common) | | | | |
+| Importer | | [import](https://github.com/tikv/importer/tree/master/src/import) | | | | |
+
+## Ecosystem Tools - [BR](https://github.com/pingcap/br): A command-line tool for distributed backup and restoration of the TiDB cluster data
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Backup | Backup data in cluster which has 3 mode: backup full cluster, backup specified DB and backup specified Table| [br/backup](https://github.com/pingcap/br/tree/master/pkg/backup), [tikv/backup](https://github.com/tikv/tikv/tree/master/components/backup) | gRPC, golang, rust | [backup-principle](https://pingcap.com/docs/dev/how-to/maintain/backup-and-restore/br/#backup-principle) | | |
+| Restore | Restore data to new cluster after backup, relatively can restore full cluster, restore specified DB and restore specified Table. | [br/restore](https://github.com/pingcap/br/tree/master/pkg/restore), [tikv/sst_importer](https://github.com/tikv/tikv/tree/master/components/sst_importer) | gRPC, golang, rust | [restoration-principle](https://pingcap.com/docs/dev/how-to/maintain/backup-and-restore/br/#restoration-principle) | | |
+
+## TiDB on K8S/Docker : Creates and manages TiDB clusters running in Kubernetes
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| TiDB Operator | TiDB Operator manages TiDB clusters on Kubernetes and automates tasks related to operating a TiDB cluster. It makes TiDB a truly cloud-native database. | [tidb-operator](https://github.com/pingcap/tidb-operator) | Golang, Kubernetes, TiDB | [how to use tidb-operator](https://pingcap.com/docs/stable/tidb-in-kubernetes/tidb-operator-overview/), Kubernetes [Concepts](https://kubernetes.io/docs/concepts/), Kubernetes [client-go SDK](https://godoc.org/k8s.io/client-go/), Kubernetes [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), TiDB [Architecture](https://pingcap.com/docs/stable/architecture/), [Helm](https://helm.sh/), [Terraform](https://www.terraform.io/) | Help Wanted [Issues](https://github.com/pingcap/tidb-operator/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3A%22help+wanted%22) | [Contributing Guide](https://github.com/pingcap/tidb-operator/blob/master/docs/CONTRIBUTING.md) |
+| Advanced StatefulSet | This is an Advanced StatefulSet CRD implementation based on official StatefulSet in Kubernetes. In addition to the official StatefulSet, it can scale the set in an arbitrary way. | [advanced-statefulset](https://github.com/pingcap/advanced-statefulset) | Golang, Kubernetes | Kubernetes [Concepts](https://kubernetes.io/docs/concepts/), Kubernetes [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/), Kubernetes StatefulSet [Implementations](https://github.com/kubernetes/kubernetes/tree/master/pkg/controller/statefulset), PingCAP StatefulSet [Implementations](https://github.com/pingcap/advanced-statefulset/tree/master/pkg/controller/statefulset) | | |
+| TiDB Docker Compose | Docker compose files for TiDB. With it, you can quickly deploy a TiDB testing cluster with a single command. | [tidb-docker-compose](https://github.com/pingcap/tidb-docker-compose)| Docker, Docker Compose | how to [start tidb with tidb-docker-compose](https://pingcap.com/docs/stable/how-to/deploy/orchestrated/docker/), docker [get started](https://docs.docker.com/get-started/),  docker [compose](https://docs.docker.com/compose/)| | |
+
+## Deployment Tools - [tidb-ansible](https://github.com/pingcap/tidb-ansible): A tool to capture data change of TiDB cluster
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| tidb ansible | TiDB deployment operation and maintenance tools | | Ansible, Python, Jinja2, Shell | How to [deploy TiDB cluster through tidb-ansible](https://pingcap.com/docs-cn/stable/how-to/deploy/orchestrated/ansible/), Ansible [docs(en)](https://docs.ansible.com) and [docs(cn)](http://www.ansible.com.cn) | | |
+
+## [Chaos-Mesh](https://github.com/pingcap/chaos-mesh): A Chaos Engineering Platform for Kubernetes
+
+| *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| chaos-mesh | | | go, kubenetes | | | |
+
+## Documentations
+
+| *Project* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- | ---- |
+| [Documentation(EN)](https://github.com/pingcap/docs) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md)| Fix typos or format (punctuation, space, indentation, code block, etc.); Fix or update inappropriate or outdated descriptions; Add missing content (sentence, paragraph, or a new document); Translate docs changes from English to Chinese; Submit, reply to, and resolve issues; (Advanced) Review Pull Requests| Chinese version done. To be translated. |
+| [Documentation(CN)](https://github.com/pingcap/docs-cn) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Chinese documentation style guide and template](https://github.com/pingcap/docs-cn/tree/master/resources), [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md) | Ibid, except for translating document changes from Chinese to English | [docs-cn readme](https://github.com/pingcap/docs-cn/blob/master/README.md), [docs-cn contribution guide](https://github.com/pingcap/docs-cn/blob/master/CONTRIBUTING.md) |
+
+## [AskTUG(CN)](https://asktug.com/)
+
+| *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- |
+| Anyone of ansible, linux, DM, Binlog, lightning, pd, tidb, tikv, grafana, prometheus | [TiDB DBA courses](https://university.pingcap.com/tidb-dba-courses/)| Help other TiDB users by answering questions; Publish practice articles of using TiDB or other databases | SOP, FAQ |
+
+## PingCAP [University(CN)](https://university.pingcap.com/)
+| *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
+| ---- | ---- | ---- | ---- |
+| | | TiDB DBA Course Design; TiDB Contributor Course Design| |
+
 ## SIG - Special Interest Group
 
 | *SIG Name* | *Description* | *Join In* |
