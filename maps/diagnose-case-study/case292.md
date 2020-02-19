@@ -25,11 +25,11 @@
 
 - 接着 PD3 leader 日志中就开始出现 `[error] campaign leader err` ，说明 PD leader 已经开始发生选举。
 
-![PD leader log](./resources/case292-1.png)
+![PD leader log](./resources/case292-1.jpg)
 
 - 在 Grafana 监控的 `Disk Performance` 监控 PD leader 的磁盘监控数据，可以发现磁盘 I/O 打满，而且整体负载非常高，经过了解该 PD leader 存储数据文件的文件系统，和 Pump server 的 binlog 以及 Prometheus Server 的监控数据共同使用相同的数据盘，在出现 I/O 负载高的时候，pump server 有大量的 binlog 写入。
 
-![PD leader log](./resources/case292-2.png)
+![PD leader log](./resources/case292-2.jpg)
 
 - 在 follower PD 的 log ，发现原 PD leader 因为时间延迟，触发选举后，实际一直没有选举成功，一直输出日志
 
