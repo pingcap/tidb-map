@@ -8,9 +8,7 @@
 thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: "IO error: While lock file: **/db/LOCK: Resource temporarily unavailable"', libcore/result.rs:945:5
 ```
 
-- 确认是由于 TiKV Server 没有停掉导致执行失败，停掉 TiKV Server 后，执行 tikv-ctl 设置 region 为 tombstone 报错如果如下：
-
-- 通过 TiKV control 执行 region tombstone 操作报错。
+- 确认是由于 TiKV Server 没有停掉导致执行失败，停掉 TiKV Server 后，执行 tikv-ctl 设置 region 为 tombstone 报错如下：
 
 ```log
 region: 90496, error: StringError("[src/server/debug.rs:944]: invalid conf_ver")
