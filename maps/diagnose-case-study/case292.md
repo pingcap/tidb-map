@@ -10,8 +10,9 @@
 |---|---|---|
 |TiDB| 2 实例 * 3 物理机||
 |TiKV| 3 实例 * 27 物理机|SSD RAID5|
-|PD| 3 实例 * 1 物理机|普通 SATA 盘;原 PD leader 的 PD name 为 PD3，其他两个 PD name 分别为 PD1，PD2|
-|Prometheus|1 实例 *  1 物理机|与 PD leader 的物理机共用，且磁盘为 SAS 盘|
+|PD| 1 实例 * 3 物理机|普通 SATA 盘;原 PD leader 的 PD name 为 PD3，其他两个 PD name 分别为 PD1，PD2|
+|Prometheus|1 实例 *  1 物理机|与 PD leader 的物理机和文件系统共用，为 SATA 盘|
+|PUMP|1 实例 * 3 物理机|与 PD 的物理机和文件系统共用，为 SATA 盘|
 
 ### 版本： v2.0.6
 
