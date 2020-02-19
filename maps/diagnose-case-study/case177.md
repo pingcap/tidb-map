@@ -13,16 +13,16 @@
 
 - PD 的日志排查发现 PD 发生选举的情况，网络变更导致 PD5 长时间没有收到心跳，发生选举，request vote @term 229 消息到达 PD2 ，使其 step down，后续 pd1 2 5 又连续发生了多轮选举，分别为：
 
-  - 1st. pd 2 become candidate @term 230
-  - 2nd. pd 5 become candidate @term 231
-  - 3rd. pd 1 become leader @term 232
-  - 4th. pd 1 transfer leadership from pd 1 to pd 2
-  - 5th. pd 2 become leader @term 233
+  - pd 2 become candidate @term 230
+  - pd 5 become candidate @term 231
+  - pd 1 become leader @term 232
+  - pd 1 transfer leadership from pd 1 to pd 2
+  - pd 2 become leader @term 233
 
 总计时间花费 22 秒，期间有业务正在操作，TiKV 集群无异常。
 
 - PD leader 日志信息如下：
-![pd2 leader log](./resources/case177-1.png)
+![pd2 leader log](./resources/case177-1.jpg)
 
 ### 结论
 
