@@ -2,7 +2,7 @@
 
 -  两地三中心场景中网络异常情况下避免 PD 触发不必要选举案例
 
-- 中午 11:48，网络支撑部门在尚未告知数据库部门情况下，进行了网络变更操作。将 A 区域 -> B 区域的路由规则切换成了 A 区域 -> C 区域-> B 区域的路由规则。切换过程中出现不到 1s 的连接中断，碰巧触发了 B 区域的 PD 发起了选举请求。原 PD leader PD2 失去 leader 角色，在 22s 内发生了几轮选举之后，leader 角色最终回到了 PD2 ，造成集群不可用时间达 22s，导致仅千条 SQL 执行失败，影响了仅百笔业务。
+- 中午 11:48，网络支撑部门在尚未告知数据库部门情况下，进行了网络变更操作。将 A 区域 -> B 区域的路由规则切换成了 A 区域 -> C 区域-> B 区域的路由规则。切换过程中出现不到 1s 的连接中断，碰巧触发了 B 区域的 PD 发起了选举请求。原 PD leader PD2 失去 leader 角色，在 22s 内发生了几轮选举之后，leader 角色最终回到了 PD2 ，造成集群不可用时间达 22s，导致近千条 SQL 执行失败，影响了近百笔业务。
 
 ## 环境信息收集
 
@@ -36,8 +36,13 @@
   - 如果 election timeout 很长的 PD 成为 leader（PD 宕机或网络隔离导致），再把 leader 转移至其他节点会有更长的不可用时间。比如相比于 3s 的 election timeout，10s 的配置恢复时间要多(10-3)x1.5=10s
   - 如果启用 lease read，会有一致性问题（PD 现在没用）。
 
-- 配置方法:如果要为不同机房设置不同的 election timeout，设置方法是修改[配置文件](https://pingcap.com/docs-cn/stable/reference/configuration/pd-server/configuration-file/)，在config文件最外层加一行,另外建议的配置是对应 [priority](https://pingcap.com/docs-cn/stable/reference/tools/pd-control/) 3,2,1，分别配置为 3s, 5s, 10s。然后滚动重启。详情可以看一下官方文档，关于 `PD 配置文件描述` 的部分。
+- 配置方法:
 
-```yaml
-election-interval = "3s"
-```
+  - 如果要为不同机房设置不同的 election timeout，设置方法是修改[静态配置文件](https://pingcap.com/docs-cn/stable/reference/configuration/pd-server/configuration-file/) `pd.toml`，在 config 文件最外层加一行。然后 PD 节点通过滚动重启生效。详情可以看一下官方文档，关于 `PD 配置文件描述` 的部分。
+  
+   ```yaml
+    election-interval = "3s"
+   ``` 
+
+  - 另外建议的配置是对应 [PD leader priority](https://pingcap.com/docs-cn/stable/reference/tools/pd-control/) 3,2,1，分别配置为 3s、5s、10s，可以通过 `PD control` 动态修改 PD 作为 leader 的优先级。
+
