@@ -1,7 +1,7 @@
 ## 现象
 * TiDB 日志
 
- ![](/Users/zhouyueyue/Desktop/resource/case875_1.png)
+ ![](./resources/case875_1.png)
 * TiKV 报错
 
  ```
@@ -10,7 +10,7 @@
  
 * PD leader 日志 
 
- ![](/Users/zhouyueyue/Desktop/resource/case875_2.png)
+ ![](./resources/case875_2.png)
 
 ## 问题分析
 * 已知信息
@@ -22,11 +22,11 @@
 * 分析步骤
 	* PD1 日志
 
-     ![](/Users/zhouyueyue/Desktop/resource/case875_3.png)
+     ![](./resources/case875_3.png)
      
     * PD0 日志
     
-      ![](/Users/zhouyueyue/Desktop/resource/case875_4.png)
+      ![](./resources/case875_4.png)
     
 >
 >分析日志可以看到，在异常期间，不断在 term 2 发起选举又一直没有选出 leader，其中 PD1 和 PD0 分别与 PD2 一直在进行选举，同时也拒绝对方，一直没有选出 leader
