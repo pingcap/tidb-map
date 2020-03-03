@@ -193,7 +193,7 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 - 5.1.2 补副本/上下线问题
 
 	- TIKV 磁盘使用 80% 容量，PD 不会进行补副本操作，miss peer 数量上升，需要扩容 TiKV，见 ONCALL-801
-	- 下线 TiKV，有 region 长时间迁移不走，3.0.4 版本已经修复改问题，见 https://github.com/tikv/tikv/pull/5526，详情请参考 ONCALL-870
+	- 下线 TiKV，有 region 长时间迁移不走，3.0.4 版本已经修复改问题，见 https://github.com/tikv/tikv/pull/5526 详情请参考 ONCALL-870
 
 - 5.1.3 balance 问题
 
@@ -209,7 +209,7 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 
 - 5.2.2 PD 选不出 leader 或者选举慢
 
-	- 选不出 leader，PD 日志中有 lease is not expired，见 https://github.com/etcd-io/etcd/issues/10355。3.0.x 版本和 2.1.19 版本已 fix 该问题，见 ONCALL-875
+	- 选不出 leader，PD 日志中有 lease is not expired，见 https://github.com/etcd-io/etcd/issues/10355 3.0.x 版本和 2.1.19 版本已 fix 该问题，见 ONCALL-875
 	- 选举慢，region 加载时间长，从 PD 日志中 grep "regions cost"（例如日志中可能是 load 460927 regions cost 11.77099s）, 如果出现秒级，则说明较慢，3.0 版本可开启 region storage（设置 use-region-storage 为 true），该特性能极大缩短加载 region 的时间，见 ONCALL-429
 
 - 5.2.3 TiDB 执行 SQL 时报 PD timeout
@@ -222,17 +222,17 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 
 - 5.2.4 其他问题
 
-	- PD 报 FATAL 错误，日志中有 range failed to find revision pair，3.0.8 已经 fix 改问题，见 https://github.com/pingcap/pd/pull/2040，详情请参考 ONCALL-947
+	- PD 报 FATAL 错误，日志中有 range failed to find revision pair，3.0.8 已经 fix 改问题，见 https://github.com/pingcap/pd/pull/2040 详情请参考 ONCALL-947
 	- 其他原因，需报 bug
 
 ### 5.3 PD OOM
 
 - 5.3.1 使用 /api/v1/regions 接口时 region 数量过多可能会导致 PD OOM，3.0.8 版本修复，见 https://github.com/pingcap/pd/pull/1986
-- 5.3.2 滚动升级的时候 PD OOM，gRPC 消息大小没限制，监控可看到 TCP InSegs 较大，3.0.6 版本修复，见 https://github.com/pingcap/pd/pull/1952，详情请参考 ONCALL-852
+- 5.3.2 滚动升级的时候 PD OOM，gRPC 消息大小没限制，监控可看到 TCP InSegs 较大，3.0.6 版本修复，见 https://github.com/pingcap/pd/pull/1952 详情请参考 ONCALL-852
 
 ### 5.4 grafana 显示问题
 
-- 5.4.1 PD role 显示 follower，grafana 表达式问题，3.0.8 版本修复，见 https://github.com/pingcap/tidb-ansible/pull/1065，详情请参考 ONCALL-1022
+- 5.4.1 PD role 显示 follower，grafana 表达式问题，3.0.8 版本修复，见 https://github.com/pingcap/tidb-ansible/pull/1065 详情请参考 ONCALL-1022
 
 ## 6. 生态 tools 问题
 
