@@ -5,10 +5,10 @@
 ### 1.1 客户端报 region is unavailable 错误
 
 - 1.1.1 region unavailable 一般是由于 region 在一段时间不可用导致（遇到 TiKV server is busy 或者发送给 TiKV 的请求由于 not leader 或者 epoch not match 被打回，或者请求 TiKV 超时等），TiDB 内部会进行 backoff 重试机制，backoff 的时间超过了一定阈值（默认 20s），就会报错给客户端，如果 backoff 在阈值内该错误对于客户端是无感知的。
-- 1.1.2 多台 TiKV 同时 OOM 导致 region 在一定时期内没有 leader，例如 ONCALL-991
+- 1.1.2 多台 TiKV 同时 OOM 导致 region 在一定时期内没有 leader，例如 [case-991](./diagnose-case-study/case991.md)
 - 1.1.3 TiKV 报 server is busy，超过 backoff 时间，参考 4.3。server is busy 属于内部流控机制，后续可能不计入 backoff 时间，正在改善
-- 1.1.4 多台 TiKV 启动不了导致 region 没有 leader。单台物理部署多个 TiKV 实例，一个物理机挂掉，由于 label 配置错了导致 region 没有 leader ，见 ONCALL-228
-- 1.1.5 follower apply 落后，成为 leader 之后把收到的请求以 epoch not match 理由打回，见 ONCALL-958（TiKV 内部需要优化改机制）
+- 1.1.4 多台 TiKV 启动不了导致 region 没有 leader。单台物理部署多个 TiKV 实例，一个物理机挂掉，由于 label 配置错了导致 region 没有 leader ，见 [case-228](./diagnose-case-study/case228.md)
+- 1.1.5 follower apply 落后，成为 leader 之后把收到的请求以 epoch not match 理由打回，见 [case-958](./diagnose-case-study/case958.md)（TiKV 内部需要优化改机制）
 
 ### 1.2 PD 异常导致服务不可用，请查看 5 PD 问题
 
@@ -24,8 +24,8 @@
 
 - 2.2.1 TiKV 单线程瓶颈
 
-	- 单个 TiKV region 过多导致单个 gRPC 线程成为瓶颈（查看 TiKV grafana Thread CPU/gRPC CPU Per Thread 监控），3.x 以上版本可以开启 hibernate region 特性来解决，见 ONCALL-612
-	- 3.0 之前版本 raftstore 单线程或者 apply 单线程到达瓶颈（TiKV grafana Thread CPU/raft store CPU 和 Async apply CPU 超过 80%），可以选择扩 TiKV（2.x 版本）或者升级到多线程模型的 3.x 版本，见 ONCALL-517
+	- 单个 TiKV region 过多导致单个 gRPC 线程成为瓶颈（查看 TiKV grafana Thread CPU/gRPC CPU Per Thread 监控），3.x 以上版本可以开启 hibernate region 特性来解决，见 [case-612](./diagnose-case-study/case612.md)
+	- 3.0 之前版本 raftstore 单线程或者 apply 单线程到达瓶颈（TiKV grafana Thread CPU/raft store CPU 和 Async apply CPU 超过 80%），可以选择扩 TiKV（2.x 版本）或者升级到多线程模型的 3.x 版本，见 [case-517](./diagnose-case-study/case517.md)
 
 - 2.2.2 CPU load 升高
 - 2.2.3 TiKV 写入慢，请参考 4.5
@@ -35,7 +35,7 @@
 
 ### 3.1 DDL
 
-- 3.1.1 修改 decimal 字段长度报错 ERROR 1105 (HY000): unsupported modify decimal column precision 见 ONCALL-1004，TiDB 暂时不支持修改 decimal 字段长度
+- 3.1.1 修改 decimal 字段长度报错 ERROR 1105 (HY000): unsupported modify decimal column precision 见 [case-1004](./diagnose-case-study/case1004.md)，TiDB 暂时不支持修改 decimal 字段长度
 - 3.1.2 TiDB DDL job 卡住不动 / 执行很慢（通过 admin show ddl jobs 可以查看 ddl 进度）
 
 	- 原因1：与外部组件（PD / TiKV）的网络问题
@@ -90,8 +90,8 @@
 - 3.2.4 OOM 常见原因
 
 	- SQL 中包含 join，通过 explain 查看发现该 join 选用 HashJoin 算法且 inner 端的表很大。如 TiDB-4116
-	- 单条 UPDATE/ DELETE 涉及的查询数据量太大。如 ONCALL-882
-	- SQL 中包含 Union 连接的多条子查询。如 TiDB-1828
+	- 单条 UPDATE/ DELETE 涉及的查询数据量太大。如 [case-882](./diagnose-case-study/case882.md)
+	- SQL 中包含 Union 连接的多条子查询。如 [case-1828](./diagnose-case-study/case1828.md)
 
 ### 3.3 执行计划不对
 
@@ -142,8 +142,8 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 
 - 4.3.1 TiKV RocksDB 出现 write stall。一个 TiKV 包含两个 RocksDB 实例，一个用于存储 raft 日志，位于 data/raft，一个用于存储真正的数据，位于data/db。通过 grep "Stalling" RocksDB 日志查看 stall 的具体原因，RocksDB 日志是 LOG 开头的文件，LOG 为当前日志
 
-	- level0 sst 太多导致 stall，添加参数 [rocksdb] max-sub-compactions = 2（或者 3） 加快 level0 sst 往下 compact 的速度，该参数的意思是将 level0->level1 的 compaction 任务最多切成max-sub-compactions 个子任务交给多线程并发执行。见 ONCALL-815
-	- pending compaction bytes 太多导致 stall，磁盘 IO 能力在业务高峰跟不上写入，可以通过调大对应 cf 的 soft-pending-compaction-bytes-limit 和 hard-pending-compaction-bytes-limit 参数来缓解，例如 [rocksdb.defaultcf] soft-pending-compaction-bytes-limit = "128GB"（当 pending compaction bytes 达到该阈值，RocksDB 会放慢写入速度。默认值 64GB）hard-pending-compaction-bytes-limit = "512GB"（当 pending compaction bytes 达到该阈值，RocksDB 会 stop 写入，通常不太可能触发该情况，因为在达到 soft-pending-compaction-bytes-limit 的阈值之后会放慢写入速度。默认值 256GB），见 ONCALL-275；如果磁盘 IO 能力持续跟不上写入，建议扩容。如果磁盘的吞吐达到了上限（例如 SATA SSD 的吞吐相对 NVME SSD 会低很多）导致 write stall，但是 CPU 资源又比较充足，可以尝试采用压缩率更高的压缩算法来缓解磁盘的压力，用 CPU 资源换磁盘资源。比如如果是 default cf compaction 压力比较大，把 [rocksdb.defaultcf] compression-per-level = ["no", "no", "lz4", "lz4", "lz4", "zstd", "zstd"] 改成 compression-per-level = ["no", "no", "zstd", "zstd", "zstd", "zstd", "zstd"]
+	- level0 sst 太多导致 stall，添加参数 [rocksdb] max-sub-compactions = 2（或者 3） 加快 level0 sst 往下 compact 的速度，该参数的意思是将 level0->level1 的 compaction 任务最多切成max-sub-compactions 个子任务交给多线程并发执行。见 [case-815](./diagnose-case-study/case815.md)
+	- pending compaction bytes 太多导致 stall，磁盘 IO 能力在业务高峰跟不上写入，可以通过调大对应 cf 的 soft-pending-compaction-bytes-limit 和 hard-pending-compaction-bytes-limit 参数来缓解，例如 [rocksdb.defaultcf] soft-pending-compaction-bytes-limit = "128GB"（当 pending compaction bytes 达到该阈值，RocksDB 会放慢写入速度。默认值 64GB）hard-pending-compaction-bytes-limit = "512GB"（当 pending compaction bytes 达到该阈值，RocksDB 会 stop 写入，通常不太可能触发该情况，因为在达到 soft-pending-compaction-bytes-limit 的阈值之后会放慢写入速度。默认值 256GB），见 [case-275](./diagnose-case-study/case275.md)；如果磁盘 IO 能力持续跟不上写入，建议扩容。如果磁盘的吞吐达到了上限（例如 SATA SSD 的吞吐相对 NVME SSD 会低很多）导致 write stall，但是 CPU 资源又比较充足，可以尝试采用压缩率更高的压缩算法来缓解磁盘的压力，用 CPU 资源换磁盘资源。比如如果是 default cf compaction 压力比较大，把 [rocksdb.defaultcf] compression-per-level = ["no", "no", "lz4", "lz4", "lz4", "zstd", "zstd"] 改成 compression-per-level = ["no", "no", "zstd", "zstd", "zstd", "zstd", "zstd"]
 	- memtable 太多导致 stall。该情况一般发生在瞬间写入量比较大，并且 memtable flush 到磁盘的速度比较慢的情况下。如果磁盘写入速度不能改善，并且只有业务峰值会出现这种情况，可以通过调大对应 cf 的 max-write-buffer-number 来缓解，例如 [rocksdb.defaultcf] max-write-buffer-number = 8 （默认值 5），同时请求注意在高峰期可能会占用更多的内存，因为可能存在于内存中的 memtable 会更多
 
 - 4.3.2 scheduler too busy
@@ -166,7 +166,7 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 	- TiKV panic 之后又被 systemd 重新拉起正常运行，可以通过查看 TiKV 的日志来确认是否有 panic，这种情况属于非预期，需要报 bug
 	- 被第三者 stop/kill，被 systemd 重新拉起。查看 dmesg 和 TiKV log 确认原因
 	- TiKV 发生 OOM 导致重启了，参考 4.2
-	- 动态调整 THP 导致 hung 住，见 ONCALL-500
+	- 动态调整 THP 导致 hung 住，见 [case-500](./diagnose-case-study/case500.md)
 
 - 4.4.2 TiKV grafana errors 面板 server is busy 看到 TiKV RocksDB 出现 write stall 导致发生重新选举，请参考 4.3.1
 - 网络隔离导致重新选举
@@ -187,30 +187,30 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 
 - 5.1.1 merge 问题
 
-	- 跨表空 region 无法 merge，需要修改 TiKV 的 [coprocessor] split-region-on-table = false 参数来解决，4.x 版本该参数默认为 false。见 ONCALL-896
+	- 跨表空 region 无法 merge，需要修改 TiKV 的 [coprocessor] split-region-on-table = false 参数来解决，4.x 版本该参数默认为 false。见 [case-896](./diagnose-case-study/case896.md)
 	- region merge 慢，可检查 PD 监控 operator 面板是否有 merge 的 operator 产生，可以适当调大 merge-schedule-limit 参数来加速 merge
 
 - 5.1.2 补副本/上下线问题
 
-	- TIKV 磁盘使用 80% 容量，PD 不会进行补副本操作，miss peer 数量上升，需要扩容 TiKV，见 ONCALL-801
-	- 下线 TiKV，有 region 长时间迁移不走，3.0.4 版本已经修复改问题，见 https://github.com/tikv/tikv/pull/5526 详情请参考 ONCALL-870
+	- TIKV 磁盘使用 80% 容量，PD 不会进行补副本操作，miss peer 数量上升，需要扩容 TiKV，见 [case-801](./diagnose-case-study/case801.md)
+	- 下线 TiKV，有 region 长时间迁移不走，3.0.4 版本已经修复改问题，见 https://github.com/tikv/tikv/pull/5526 详情请参考 [case-870](./diagnose-case-study/case870.md)
 
 - 5.1.3 balance 问题
 
-	- leader/region count 分布不均，见 ONCALL-394, ONCALL-759。主要原因是 balance 是依赖 region/leader 的 size 去调度的，所以可能会造成 count 数量的不均衡，4.0 新增了一个参数 [leader-schedule-policy]，可以调整 leader 的调度策略，根据 "count" 或者是 "size" 进行调度
+	- leader/region count 分布不均，见 [case-394](./diagnose-case-study/case394.md), [case-759](./diagnose-case-study/case759.md)。主要原因是 balance 是依赖 region/leader 的 size 去调度的，所以可能会造成 count 数量的不均衡，4.0 新增了一个参数 [leader-schedule-policy]，可以调整 leader 的调度策略，根据 "count" 或者是 "size" 进行调度
 
 ### 5.2 PD 选举问题
 
 - 5.2.1 PD 发生 leader 切换
 
-	- 磁盘问题，PD 所在的节点 I/O 被打满，排查是否有其他 I/O 高的组件与 PD 混部以及盘的健康情况，可通过 disk performance 监控中 latency 和 load 等指标进行验证，必要时可以使用 fio 工具对盘进行检测，见 ONCALL-292
-	- 网络问题，PD 日志中有 lost the TCP streaming connection，排查 PD 之间网络是否有问题，可通过 PD 监控中 etcd 的 round trip 来验证，见 ONCALL-177
-	- 系统 load 高，日志中能看到 server is likely overloaded，见 ONCALL-214
+	- 磁盘问题，PD 所在的节点 I/O 被打满，排查是否有其他 I/O 高的组件与 PD 混部以及盘的健康情况，可通过 disk performance 监控中 latency 和 load 等指标进行验证，必要时可以使用 fio 工具对盘进行检测，见 [case-292](./diagnose-case-study/case292.md)
+	- 网络问题，PD 日志中有 lost the TCP streaming connection，排查 PD 之间网络是否有问题，可通过 PD 监控中 etcd 的 round trip 来验证，见 [case-177](./diagnose-case-study/case177.md)
+	- 系统 load 高，日志中能看到 server is likely overloaded，见 [case-214](./diagnose-case-study/case214.md)
 
 - 5.2.2 PD 选不出 leader 或者选举慢
 
-	- 选不出 leader，PD 日志中有 lease is not expired，见 https://github.com/etcd-io/etcd/issues/10355 3.0.x 版本和 2.1.19 版本已 fix 该问题，见 ONCALL-875
-	- 选举慢，region 加载时间长，从 PD 日志中 grep "regions cost"（例如日志中可能是 load 460927 regions cost 11.77099s）, 如果出现秒级，则说明较慢，3.0 版本可开启 region storage（设置 use-region-storage 为 true），该特性能极大缩短加载 region 的时间，见 ONCALL-429
+	- 选不出 leader，PD 日志中有 lease is not expired，见 https://github.com/etcd-io/etcd/issues/10355 3.0.x 版本和 2.1.19 版本已 fix 该问题，见 [case-875](./diagnose-case-study/case875.md)
+	- 选举慢，region 加载时间长，从 PD 日志中 grep "regions cost"（例如日志中可能是 load 460927 regions cost 11.77099s）, 如果出现秒级，则说明较慢，3.0 版本可开启 region storage（设置 use-region-storage 为 true），该特性能极大缩短加载 region 的时间，见 [case-429](./diagnose-case-study/case429.md)
 
 - 5.2.3 TiDB 执行 SQL 时报 PD timeout
 
@@ -222,17 +222,17 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 
 - 5.2.4 其他问题
 
-	- PD 报 FATAL 错误，日志中有 range failed to find revision pair，3.0.8 已经 fix 改问题，见 https://github.com/pingcap/pd/pull/2040 详情请参考 ONCALL-947
+	- PD 报 FATAL 错误，日志中有 range failed to find revision pair，3.0.8 已经 fix 改问题，见 https://github.com/pingcap/pd/pull/2040 详情请参考 [case-947](./diagnose-case-study/case947.md)
 	- 其他原因，需报 bug
 
 ### 5.3 PD OOM
 
 - 5.3.1 使用 /api/v1/regions 接口时 region 数量过多可能会导致 PD OOM，3.0.8 版本修复，见 https://github.com/pingcap/pd/pull/1986
-- 5.3.2 滚动升级的时候 PD OOM，gRPC 消息大小没限制，监控可看到 TCP InSegs 较大，3.0.6 版本修复，见 https://github.com/pingcap/pd/pull/1952 详情请参考 ONCALL-852
+- 5.3.2 滚动升级的时候 PD OOM，gRPC 消息大小没限制，监控可看到 TCP InSegs 较大，3.0.6 版本修复，见 https://github.com/pingcap/pd/pull/1952 详情请参考 [case-852](./diagnose-case-study/case852.md)
 
 ### 5.4 grafana 显示问题
 
-- 5.4.1 PD role 显示 follower，grafana 表达式问题，3.0.8 版本修复，见 https://github.com/pingcap/tidb-ansible/pull/1065 详情请参考 ONCALL-1022
+- 5.4.1 PD role 显示 follower，grafana 表达式问题，3.0.8 版本修复，见 https://github.com/pingcap/tidb-ansible/pull/1065 详情请参考 [case-1022](./diagnose-case-study/case1022.md)
 
 ## 6. 生态 tools 问题
 
@@ -252,7 +252,7 @@ Decimal 的乘法计算就不会有这个问题，因为绕过越界，会直接
 	- binlog 数据太大，造成写 Kafka 的单条消息太大，需要修改 kafka 的下列配置来解决：message.max.bytes=1073741824
 replica.fetch.max.bytes=1073741824
 fetch.message.max.bytes=1073741824
-见 ONCALL-789
+见 [case-789](./diagnose-case-study/case789.md)
 
 - 6.1.5 上下游数据不一致
 
@@ -260,14 +260,14 @@ fetch.message.max.bytes=1073741824
 	- 部分 TiDB 节点进入 ignore binlog 状态。3.0.6 及之后的版本可以通过访问 http://127.0.0.1:10080/info/all 接口可以检查所有节点的 Binlog 状态。之前的版本需要看 tidb 的日志中是否有 ignore binlog 关键字来确认是该问题
 	- 上下游 timestamp 列的值不一致
 
-		- 时区问题，需要确保 drainer 和上下游数据库时区一致，drainer 通过 `/etc/localtime` 获取时区，不支持 `TZ` 环境变量，见 ONCALL-826
+		- 时区问题，需要确保 drainer 和上下游数据库时区一致，drainer 通过 `/etc/localtime` 获取时区，不支持 `TZ` 环境变量，见 [case-826](./diagnose-case-study/case826.md)
 		- TiDB 中 timestamp 的默认值为 null，mysql 5.7 中 timestamp 默认值为当前时间（mysql 8 无此问题），因此在上游写入 null 的 timestamp 且下游是 mysql 5.7 时，timestamp 列数据不一致。在开启 binlog 前，在上游执行 `set @@global.explicit_defaults_for_timestamp=on;` 可解决问题，见 TOOL-1539
 
 	- 其他情况报 bug
 
 - 6.1.6 同步慢
 
-	- 下游是 TiDB/MySQL，上游频繁做 DDL，参见 ONCALL-1023
+	- 下游是 TiDB/MySQL，上游频繁做 DDL，参见 [case-1023](./diagnose-case-study/case1023.md)
 	- 下游是 TiDB/MySQL，需要同步的表中存在没有主键且没有唯一索引的表，这种情况会导致 binlog 性能下降，建议加主键或唯一索引
 	- 下游输出到文件，检查目标磁盘/网络盘是否慢
 	- 其他情况报 bug
@@ -282,11 +282,11 @@ fetch.message.max.bytes=1073741824
 
 - 6.1.9 Drainer 报错 `gen update sqls failed: table xxx: row data is corruption []`
 
-	- 触发条件：上游做 Drop Column DDL 的时候同时在做这张表的 DML。已经在 v3.0.6 修复，见 ONCALL-820
+	- 触发条件：上游做 Drop Column DDL 的时候同时在做这张表的 DML。已经在 v3.0.6 修复，见 [case-820](./diagnose-case-study/case820.md)
 
 - 6.1.10 Drainer 同步卡住，进程活跃但 checkpoint 不更新
 
-	- 已知 bug 在 v3.0.4 fix，见 ONCALL-741
+	- 已知 bug 在 v3.0.4 fix，见 [case-741](./diagnose-case-study/case741.md)
 
 - 6.1.11 任何组件 panic
 
@@ -327,8 +327,8 @@ fetch.message.max.bytes=1073741824
 	- 检查 master 的 binlog 是否被 purge
 	- 检查 relay.meta 中记录的位点信息
 
-		- relay.meta 中记录空的 GTID 信息，DM-worker 进程在退出时、以及定时（30s）会把内存中的 gtid 信息保存到 relay.meta 中，在没有获取到上游 GTID 信息的情况下，把空的 GTID 信息保存到了 relay.meta 中。见 ONCALL-772
-		- relay.meta 中记录的 binlog event 不完整触发 recover 流程后记录错误的 GTID 信息，该问题可能会在 1.0.2 之前的版本遇到，已在 1.0.2 版本修复。见 ONCALL-764
+		- relay.meta 中记录空的 GTID 信息，DM-worker 进程在退出时、以及定时（30s）会把内存中的 gtid 信息保存到 relay.meta 中，在没有获取到上游 GTID 信息的情况下，把空的 GTID 信息保存到了 relay.meta 中。见 [case-772](./diagnose-case-study/case772.md)
+		- relay.meta 中记录的 binlog event 不完整触发 recover 流程后记录错误的 GTID 信息，该问题可能会在 1.0.2 之前的版本遇到，已在 1.0.2 版本修复。见 [case-764](./diagnose-case-study/case764.md)
 
 - 6.2.7 DM 同步报错 Error 1366: incorr
 ect utf8 value eda0bdedb29d(\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd)
