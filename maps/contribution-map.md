@@ -168,9 +168,9 @@
 
 | *SIG Name* | *Description* | *Join In* |
 | ---- | ---- | ---- |
-| Engine | Build a fast, reliable storage engine. Works included in repo [RocksDB](https://github.com/facebook/rocksdb), [Titan](https://github.com/tikv/titan), and [rust-rocksdb](https://github.com/tikv/rust-rocksdb), and etc. | https://tikv-wg.slack.com channel: engine-sig |
-| Coprocessor | TiKV Coprocessor is the computing component for TiDB's pushdown requests. | https://tikv-wg.slack.com channel: copr-sig |
-| Raft | Covers Raft related work in TiKV, including optimize raft-rs and the Multi-Raft implementation in TiKV. | https://tikv-wg.slack.com channel: raft-sig |
-| Transaction | Covers transaction related work in TiKV, including improve transaction in TiKV and explore new transaction model. | https://tikv-wg.slack.com channel: transaction-sig |
-| Performance | Covers performance related work in TiKV, including find bottlenecks in TiKV and give optimizations. | https://tikv-wg.slack.com channel: performance-sig |
-| TiKV-Ecosystem | Covers the surrounding modules of the TiKV project, like TiKV clients in different language, rust-promethues and fast backup restore tool etc. | https://tikv-wg.slack.com channel: ecosystem-sig |
+| Engine | Build a fast, reliable storage engine. Works included in repo [RocksDB](https://github.com/facebook/rocksdb), [Titan](https://github.com/tikv/titan), and [rust-rocksdb](https://github.com/tikv/rust-rocksdb), and etc. [Readme](https://github.com/tikv/community/blob/master/sig/engine/README.md) | https://tikv-wg.slack.com channel: engine-sig |
+| Coprocessor | TiKV Coprocessor is the computing component for TiDB's pushdown requests. [Readme](https://github.com/tikv/community/blob/master/sig/coprocessor/README.md)  | https://tikv-wg.slack.com channel: copr-sig|
+| Raft | Covers Raft related work in TiKV, including optimize raft-rs and the Multi-Raft implementation in TiKV. [Readme](https://github.com/tikv/community/blob/master/sig/raft/README.md) | https://tikv-wg.slack.com channel: raft-sig |
+| Transaction | Covers transaction related work in TiKV, including improve transaction in TiKV and explore new transaction model. [Readme](https://github.com/tikv/community/blob/master/sig/transaction/README.md) | https://tikv-wg.slack.com channel: transaction-sig |
+| Performance | Covers performance related work in TiKV, including find bottlenecks in TiKV and give optimizations. [Readme](https://github.com/tikv/community/blob/master/sig/performance/README.md) | https://tikv-wg.slack.com channel: performance-sig |
+| TiKV-Ecosystem | Covers the surrounding modules of the TiKV project, like TiKV clients in different language, rust-promethues and fast backup restore tool etc. [Readme](https://github.com/tikv/community/blob/master/sig/ecosystem/README.md) | https://tikv-wg.slack.com channel: ecosystem-sig |
