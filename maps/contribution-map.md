@@ -143,11 +143,11 @@
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
 | chaos-mesh | | | go, kubenetes | | | |
 
-## Documentations
+## Documentation
 
 | *Project* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- | ---- |
-| [Documentation(EN)](https://github.com/pingcap/docs) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md)| Fix typos or format (punctuation, space, indentation, code block, etc.); Fix or update inappropriate or outdated descriptions; Add missing content (sentence, paragraph, or a new document); Translate docs changes from English to Chinese; Submit, reply to, and resolve issues; (Advanced) Review Pull Requests| Chinese version done. To be translated. |
+| [Documentation(EN)](https://github.com/pingcap/docs) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md)| Fix typos or format (punctuation, space, indentation, code block, etc.); Fix or update inappropriate or outdated descriptions; Add missing content (sentence, paragraph, or a new document); Translate docs changes from English to Chinese; Submit, reply to, and resolve issues; (Advanced) Review Pull Requests| [docs readme](https://github.com/pingcap/docs/blob/master/README.md), [docs contribution guide](https://github.com/pingcap/docs/blob/master/CONTRIBUTING.md) |
 | [Documentation(CN)](https://github.com/pingcap/docs-cn) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Chinese documentation style guide and template](https://github.com/pingcap/docs-cn/tree/master/resources), [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md) | Ibid, except for translating document changes from Chinese to English | [docs-cn readme](https://github.com/pingcap/docs-cn/blob/master/README.md), [docs-cn contribution guide](https://github.com/pingcap/docs-cn/blob/master/CONTRIBUTING.md) |
 
 ## [AskTUG(CN)](https://asktug.com/)
