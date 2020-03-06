@@ -16,7 +16,7 @@
 * [TiDB on K8S/Docker : Creates and manages TiDB clusters running in Kubernetes](#tidb-on-k8sdocker--creates-and-manages-tidb-clusters-running-in-kubernetes)
 * [Deployment Tools - tidb-ansible: A tool to capture data change of TiDB cluster](#deployment-tools---tidb-ansible-a-tool-to-capture-data-change-of-tidb-cluster)
 * [Chaos-Mesh: A Chaos Engineering Platform for Kubernetes](#chaos-mesh-a-chaos-engineering-platform-for-kubernetes)
-* [Documentations](#documentations)
+* [Documentation](#documentation)
 * [AskTUG(CN)](#asktugcn)
 * [PingCAP University(CN)](#pingcap-universitycn)
 * [SIG - Special Interest Group](#sig---special-interest-group)
