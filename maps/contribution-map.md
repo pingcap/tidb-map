@@ -1,4 +1,4 @@
-# A map to guide contributors how to contribute.
+# A map that guides what and how contributors can contribute
 
 ## Table of Contents
 
