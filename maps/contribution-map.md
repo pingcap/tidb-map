@@ -17,7 +17,7 @@
 * [Deployment Tools - tidb-ansible: A tool to capture data change of TiDB cluster](#deployment-tools---tidb-ansible-a-tool-to-capture-data-change-of-tidb-cluster)
 * [Chaos-Mesh: A Chaos Engineering Platform for Kubernetes](#chaos-mesh-a-chaos-engineering-platform-for-kubernetes)
 * [Documentation](#documentation)
-* [AskTUG(CN)](#asktugcn)
+* [TUG(CN)](#tugcn)
 * [PingCAP University(CN)](#pingcap-universitycn)
 * [SIG - Special Interest Group](#sig---special-interest-group)
 
@@ -150,16 +150,17 @@
 | [Documentation(EN)](https://github.com/pingcap/docs) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md)| Fix typos or format (punctuation, space, indentation, code block, etc.); Fix or update inappropriate or outdated descriptions; Add missing content (sentence, paragraph, or a new document); Translate docs changes from English to Chinese; Submit, reply to, and resolve issues; (Advanced) Review Pull Requests| [docs readme](https://github.com/pingcap/docs/blob/master/README.md), [docs contribution guide](https://github.com/pingcap/docs/blob/master/CONTRIBUTING.md) |
 | [Documentation(CN)](https://github.com/pingcap/docs-cn) | Sharp eyes, Good English writing, Technical writing or communication, Translation from English to Chinese, Knowledge about TiDB | [Chinese documentation style guide and template](https://github.com/pingcap/docs-cn/tree/master/resources), [Commit Message and Pull Request Style](https://github.com/pingcap/community/blob/master/contributors/commit-message-pr-style.md), [Code Comment Style](https://github.com/pingcap/community/blob/master/contributors/code-comment-style.md) | Ibid, except for translating document changes from Chinese to English | [docs-cn readme](https://github.com/pingcap/docs-cn/blob/master/README.md), [docs-cn contribution guide](https://github.com/pingcap/docs-cn/blob/master/CONTRIBUTING.md) |
 
-## [AskTUG(CN)](https://asktug.com/)
+## TUG(CN)
 
 | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- |
-| Anyone of ansible, linux, DM, Binlog, lightning, pd, tidb, tikv, grafana, prometheus | [TiDB DBA courses](https://university.pingcap.com/tidb-dba-courses/)| Help other TiDB users by answering questions; Publish practice articles of using TiDB or other databases | SOP, FAQ |
+| Anyone of ansible, linux, DM, Binlog, lightning, pd, tidb, tikv, grafana, prometheus. Any experience in using RDBMS like MySQL or other RDBMS. | [TiDB DBA courses](https://university.pingcap.com/tidb-dba-courses/) | Help other TiDB users by answering questions in [AskTUG](https://asktug.com/); Publish practice articles of using TiDB or other databases; Giving presentations at TUG activities to share experience with TiDB; Involving in the organization/management of TUG (TiDB User Group) to expand the user base of TiDB | [Join TUG](http://pingcaptidb.mikecrm.com/gHY23LJ) |
 
-## PingCAP [University(CN)](https://university.pingcap.com/)
+## [PingCAP University(CN)](https://university.pingcap.com/)
+
 | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- |
-| | | TiDB DBA Course Design; TiDB Contributor Course Design| |
+| | | TiDB DBA Course Design; TiDB Contributor Course Design; Sharing notes on TiDB; Become an administrator of the Wechat (online) group of learning; Joining the group to make subtitles for the video courses or translate them; Helping answer questions on TiDB; Notes, subtitles, translation, FAQ | [Join PU](http://pingcaptidb.mikecrm.com/zNM8EHE) |
 
 ## SIG - Special Interest Group
 
