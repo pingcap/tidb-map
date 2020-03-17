@@ -219,7 +219,9 @@ count / row count 大于某个值（例如 0.3）或者表中存在时间列的�
 - 4.5.1 通过查看 TiKV gRPC 的 prewrite/commit/raw-put(仅限 raw kv 集群) duration 确认确实是 TiKV 写入慢了。通常情况下可以按照 performance-map 来定位到底哪个阶段慢了，下面列出集中常见的情况
 - 4.5.2 scheduler CPU 繁忙（仅限 transaction kv）。prewrite/commit 的 scheduler command duration 比 scheduler latch wait duration + storage async write duartion 更长，并且 scheduler worker CPU 比较高，例如超过 scheduler-worker-pool-size * 100% 的 80%，并且或者整个机器的 CPU 资源比较紧张。如果写入量很大，确认下是否 [storage] scheduler-worker-pool-size 配置得太小。其他情况请报 bug
 - 4.5.3 append log 慢。TiKV grafana 的 Raft IO/append log duration 比较高，通常情况下是由于写盘慢了，可以检查 RocksDB - raft 的 WAL Sync Duration max 值来确认，否则可能需要报 bug
-- 4.5.4 raftstore 线程繁忙。TiKV grafana 的 Raft Propose/propose wait duration 明显高于 append log duration。请查看 1）[raftstore] store-pool-size 配置是否过小（该值建议在[1,5] 之间，不建议太大）。2）机器的 CPU 是不是不够了
+- 4.5.4 raftstore 线程繁忙。TiKV grafana 的 Raft Propose/propose wait duration 明显高于 append log duration。请查看 
+  - 1）[raftstore] store-pool-size 配置是否过小（该值建议在[1,5] 之间，不建议太大）。
+  - 2）机器的 CPU 是不是不够了
 - 4.5.5 apply 慢了。TiKV grafana 的 Raft IO/apply log duration 比较高，通常会伴随着 Raft Propose/apply wait duration 比较高。可能是 
   - 1） [raftstore] apply-pool-size 配置过小（建议在 [1, 5] 之间，不建议太大），Thread CPU/apply cpu 比较高；
   - 2）机器的 CPU 资源不够了；
