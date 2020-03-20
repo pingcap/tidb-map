@@ -44,12 +44,12 @@ v3.0.3
 
 6. 排查 grpc cpu 占用高的原因。
 
-像用户了解到，用户在之前调整过 storage-pool-size 参数，从 2 调整到 4。调整之后通过监控看到 grpc cpu 上升。推测是心跳导致的。通过 PD -> Heartbeat -> Region heartbeat report 看到 storage-pool-size 调整前后，heartbeat 翻倍了。
+向用户了解到，用户在之前调整过 storage-pool-size 参数，从 2 调整到 4。调整之后通过监控看到 grpc cpu 上升。推测是心跳导致的。通过 PD -> Heartbeat -> Region heartbeat report 看到 storage-pool-size 调整前后，heartbeat 翻倍了。
 
-在这个例子中，用户集群单个 TiKV 上 Region 比较多，单个 TiKV Region 数量达到 10W+，在 storage-pool-size 为 2 的时候，raft store cpu 处理不过来，能够处理并发送出去的 heartbeat 比较少，所以 grpc cpu 比较低，storage-pool-size 调大之后， raftstore 能处理过来了，能够及时处理并发送更多的 heartbeat，所以 grpc cpu 上来了，grpc cpu 称为了瓶颈。 
+在这个例子中，用户集群单个 TiKV 上 Region 比较多，单个 TiKV Region 数量达到 10 万+，在 storage-pool-size 为 2 的时候，raft store cpu 处理不过来，能够处理并发送出去的 heartbeat 比较少，所以 grpc cpu 比较低，storage-pool-size 调大之后， raftstore 能处理过来了，能够及时处理并发送更多的 heartbeat，所以 grpc cpu 上来了，grpc cpu 称为了瓶颈。 
 
 ## 结论
-- 单个 TiKV region 数量过多导致 raft store CPU 和 gRPC CPU 线程成为瓶颈。按照官网推荐配置，建议单个 TiKV 承载 Region 数量不要超过 3W。当单个 TiKV Region 数量超过 5W（建议值，实际可以按照服务器配置情况决定），3.0 以上版本可以开启 hibernate region 特性降低不活跃 region 的心跳发送频率，降低 tikv 负载
+- 单个 TiKV region 数量过多导致 raft store CPU 和 gRPC CPU 线程成为瓶颈。按照官网推荐配置，建议单个 TiKV 承载 Region 数量不要超过 3 万。当单个 TiKV Region 数量超过 5 万（建议值，实际可以按照服务器配置情况决定），3.0 以上版本可以开启 hibernate region 特性降低不活跃 region 的心跳发送频率，降低 tikv 负载
 - hibernate region 特性可以参考：https://github.com/tikv/tikv/blob/fa6e6d3eda27e7580a2c2e5ec88a8895d7b4cafb/docs/reference/configuration/raftstore-config.md#hibernate-region
 
 
