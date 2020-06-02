@@ -4,22 +4,24 @@
 
 <!-- vim-markdown-toc GFM -->
 
-* [TiDB is an open-source distributed HTAP database compatible with the MySQL protocol](#tidb-is-an-open-source-distributed-htap-database-compatible-with-the-mysql-protocol)
-* [TiKV, distributed transactional key-value database](#tikv-distributed-transactional-key-value-database)
-* [PD Placement driver for TiKV](#pd-placement-driver-for-tikv)
-* [TiKV Clients](#tikv-clients)
-* [Libraries depended by TiKV](#libraries-depended-by-tikv)
-* [Ecosystem Tools: DM Data Migration Platform](#ecosystem-tools-dm-data-migration-platform)
-* [Ecosystem Tools - Binlog : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization](#ecosystem-tools---binlog--a-tool-used-to-collect-and-merge-tidbs-binlog-for-real-time-data-backup-and-synchronization)
-* [Ecosystem Tools - Lightning: A high-speed data import tool for TiDB](#ecosystem-tools---lightning-a-high-speed-data-import-tool-for-tidb)
-* [Ecosystem Tools - BR: A command-line tool for distributed backup and restoration of the TiDB cluster data](#ecosystem-tools---br-a-command-line-tool-for-distributed-backup-and-restoration-of-the-tidb-cluster-data)
-* [TiDB on K8S/Docker : Creates and manages TiDB clusters running in Kubernetes](#tidb-on-k8sdocker--creates-and-manages-tidb-clusters-running-in-kubernetes)
-* [Deployment Tools - tidb-ansible: A tool to capture data change of TiDB cluster](#deployment-tools---tidb-ansible-a-tool-to-capture-data-change-of-tidb-cluster)
-* [Chaos-Mesh: A Chaos Engineering Platform for Kubernetes](#chaos-mesh-a-chaos-engineering-platform-for-kubernetes)
-* [Documentation](#documentation)
-* [TUG(CN)](#tugcn)
-* [PingCAP University(CN)](#pingcap-universitycn)
-* [SIG - Special Interest Group](#sig---special-interest-group)
+- [A map that guides what and how contributors can contribute](#A-map-that-guides-what-and-how-contributors-can-contribute)
+  - [Table of Contents](#Table-of-Contents)
+  - [TiDB is an open-source distributed HTAP database compatible with the MySQL protocol](#TiDB-is-an-open-source-distributed-HTAP-database-compatible-with-the-MySQL-protocol)
+  - [TiKV, distributed transactional key-value database](#TiKV-distributed-transactional-key-value-database)
+  - [PD Placement driver for TiKV](#PD-Placement-driver-for-TiKV)
+  - [TiKV Clients](#TiKV-Clients)
+  - [Libraries depended by TiKV](#Libraries-depended-by-TiKV)
+  - [Ecosystem Tools: DM Data Migration Platform](#Ecosystem-Tools-DM-Data-Migration-Platform)
+  - [Ecosystem Tools - Binlog : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization](#Ecosystem-Tools---Binlog--A-tool-used-to-collect-and-merge-tidbs-binlog-for-real-time-data-backup-and-synchronization)
+  - [Ecosystem Tools - Lightning: A high-speed data import tool for TiDB](#Ecosystem-Tools---Lightning-A-high-speed-data-import-tool-for-TiDB)
+  - [Ecosystem Tools - BR: A command-line tool for distributed backup and restoration of the TiDB cluster data](#Ecosystem-Tools---BR-A-command-line-tool-for-distributed-backup-and-restoration-of-the-TiDB-cluster-data)
+  - [TiDB on K8S/Docker : Creates and manages TiDB clusters running in Kubernetes](#TiDB-on-K8SDocker--Creates-and-manages-TiDB-clusters-running-in-Kubernetes)
+  - [Deployment Tools - tidb-ansible: A tool to capture data change of TiDB cluster](#Deployment-Tools---tidb-ansible-A-tool-to-capture-data-change-of-TiDB-cluster)
+  - [Chaos-Mesh: A Chaos Engineering Platform for Kubernetes](#Chaos-Mesh-A-Chaos-Engineering-Platform-for-Kubernetes)
+  - [Documentation](#Documentation)
+  - [TUG(CN)](#TUGCN)
+  - [PingCAP University(CN)](#PingCAP-UniversityCN)
+  - [SIG - Special Interest Group](#SIG---Special-Interest-Group)
 
 <!-- vim-markdown-toc -->
 
@@ -182,16 +184,15 @@ Contribution tutorial:
 
 | *SIG Name* | *Description* | *Join In* |
 | ---- | ---- | ---- |
-| DDL(TiDB) | Covers the TiDB DDL and parser parts. Work includes supporting new features or improving the syntax compatibility between TiDB and MySQL, fixing all kinds of DDL-related and parser-related bugs, and etc. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-ddl) | https://pingcap.com/tidbslack channel: sig-ddl |
-| Exec(TiDB) | Focuses on the development and maintenance of the TiDB [Function and Operator](https://pingcap.com/docs/dev/reference/sql/functions-and-operators/reference/). [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-exec) | https://pingcap.com/tidbslack channel: sig-exec |
-| Planner(TiDB) | Focuses on the development and maintenance of the TiDB [planner](https://pingcap.com/docs/stable/reference/performance/sql-optimizer-overview/) and [statistics](https://pingcap.com/docs/stable/reference/performance/statistics/) components， make TiDB planner more smart and more accurate. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-planner) | https://pingcap.com/tidbslack channel: sig-planner |
-| Scheduling(TiDB) | Focuses on the distributed scheduling system in TiDB. Work includes improving the existing scheduling system and developing a new scheduling system. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-scheduling) | https://pingcap.com/tidbslack channel: sig-scheduling |
-| K8S(TiDB) | Supports TiDB Products on Kubernetes and Docker. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-k8s) | https://pingcap.com/tidbslack channel: tidb-on-cloud |
-| Tools(TiDB) | Improves TiDB surrounding tools, like tidb-lightning, tidb-binlog and so on. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-tools) | https://pingcap.com/tidbslack channel: sig-tools |
-| Dashboard(TiDB) | Focuses on the development of the [TiDB Dashboard](https://github.com/pingcap-incubator/tidb-dashboard). [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-dashboard) | https://pingcap.com/tidbslack channel: sig-dashboard, sig-dashboard-china |
-| Engine(TiKV) | Build a fast, reliable storage engine. Works included in repo [RocksDB](https://github.com/facebook/rocksdb), [Titan](https://github.com/tikv/titan), and [rust-rocksdb](https://github.com/tikv/rust-rocksdb), and etc. [Readme](https://github.com/tikv/community/blob/master/sig/engine/README.md) | https://tikv-wg.slack.com channel: engine-sig |
-| Coprocessor(TiKV) | TiKV Coprocessor is the computing component for TiDB's pushdown requests. [Readme](https://github.com/tikv/community/blob/master/sig/coprocessor/README.md) | https://tikv-wg.slack.com channel: copr-sig|
-| Raft(TiKV) | Covers Raft related work in TiKV, including optimize raft-rs and the Multi-Raft implementation in TiKV. [Readme](https://github.com/tikv/community/blob/master/sig/raft/README.md) | https://tikv-wg.slack.com channel: raft-sig |
-| Transaction(TiKV, TiDB) | Covers transaction related work in TiKV and TiDB, including improve transaction in TiKV and TiDB, and explore new transaction model. [Readme](https://github.com/tikv/community/blob/master/sig/transaction/README.md) | https://tikv-wg.slack.com channel: transaction-sig |
-| Performance(TiKV) | Covers performance related work in TiKV, including find bottlenecks in TiKV and give optimizations. [Readme](https://github.com/tikv/community/blob/master/sig/performance/README.md) | https://tikv-wg.slack.com channel: performance-sig |
-| TiKV-Ecosystem(TiKV) | Covers the surrounding modules of the TiKV project, like TiKV clients in different language, rust-promethues and fast backup restore tool etc. [Readme](https://github.com/tikv/community/blob/master/sig/ecosystem/README.md) | https://tikv-wg.slack.com channel: ecosystem-sig |
+| DDL(TiDB) | Covers the TiDB DDL and parser parts. Work includes supporting new features or improving the syntax compatibility between TiDB and MySQL, fixing all kinds of DDL-related and parser-related bugs, and etc. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-ddl) | channel: [sig-ddl](https://slack.tidb.io/invite?team=tidb-community&channel=sig-ddl&ref=github-sig) |
+| Exec(TiDB) | Focuses on the development and maintenance of the TiDB [Function and Operator](https://pingcap.com/docs/dev/reference/sql/functions-and-operators/reference/). [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-exec) | channel: [sig-exec](https://slack.tidb.io/invite?team=tidb-community&channel=sig-exec&ref=tidb-map) |
+| Planner(TiDB) | Focuses on the development and maintenance of the TiDB [planner](https://pingcap.com/docs/stable/reference/performance/sql-optimizer-overview/) and [statistics](https://pingcap.com/docs/stable/reference/performance/statistics/) components， make TiDB planner more smart and more accurate. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-planner) | channel: [sig-planner](https://slack.tidb.io/invite?team=tidb-community&channel=sig-planner&ref=tidb-map) |
+| Scheduling(TiDB) | Focuses on the distributed scheduling system in TiDB. Work includes improving the existing scheduling system and developing a new scheduling system. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-scheduling) | channel: [sig-scheduling](https://slack.tidb.io/invite?team=tidb-community&channel=sig-scheduling&ref=tidb-map) |
+| K8S(TiDB) | Supports TiDB Products on Kubernetes and Docker. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-k8s) | channel: [k8s](https://slack.tidb.io/invite?team=tidb-community&channel=sig-k8s&ref=github-sig) |
+| Tools(TiDB) | Improves TiDB surrounding tools, like tidb-lightning, tidb-binlog and so on. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-tools) | channel: [sig-tools](https://slack.tidb.io/invite?team=tidb-community&channel=sig-tools&ref=tidb-map) |
+| Dashboard(TiDB) | Focuses on the development of the [TiDB Dashboard](https://github.com/pingcap-incubator/tidb-dashboard). [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-dashboard) | channel: [sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=tidb-map)|
+| Engine(TiKV) | Build a fast, reliable storage engine. Works included in repo [RocksDB](https://github.com/facebook/rocksdb), [Titan](https://github.com/tikv/titan), and [rust-rocksdb](https://github.com/tikv/rust-rocksdb), and etc. [Readme](https://github.com/tikv/community/blob/master/sig/engine/README.md) | channel: [sig-engine](https://slack.tidb.io/invite?team=tikv-wg&channel=sig-engine&ref=github-sig) |
+| Coprocessor(TiKV) | TiKV Coprocessor is the computing component for TiDB's pushdown requests. [Readme](https://github.com/tikv/community/blob/master/sig/coprocessor/README.md) | channel: [sig-copr](https://slack.tidb.io/invite?team=tikv-wg&channel=sig-copr&ref=github-sig)|
+| Raft(TiKV) | Covers Raft related work in TiKV, including optimize raft-rs and the Multi-Raft implementation in TiKV. [Readme](https://github.com/tikv/community/blob/master/sig/raft/README.md) | channel: [sig-raft](https://slack.tidb.io/invite?team=tikv-wg&channel=sig-raft&ref=github-sig) |
+| Transaction(TiKV, TiDB) | Covers transaction related work in TiKV and TiDB, including improve transaction in TiKV and TiDB, and explore new transaction model. [Readme](https://github.com/tikv/community/blob/master/sig/transaction/README.md) | channel: [sig-transaction](https://slack.tidb.io/invite?team=tikv-wg&channel=sig-transaction&ref=github-sig) |
+| Performance(TiKV) | Covers performance related work in TiKV, including find bottlenecks in TiKV and give optimizations. [Readme](https://github.com/tikv/community/blob/master/sig/performance/README.md) | channel: [sig-performance](https://slack.tidb.io/invite?team=tikv-wg&channel=sig-performance&ref=github-sig) |
