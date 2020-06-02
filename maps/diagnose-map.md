@@ -190,7 +190,7 @@ count / row count 大于某个值（例如 0.3）或者表中存在时间列的�
 
 - 4.3.2 `scheduler too busy`
 
-	- 写入冲突严重，`latch wait duration` 比较高，查看监控： grafana -> TiKV-details -> scheduler prewrite 或者 scheduler commit  的 `latch wait duration`。scheduler 写入任务堆积，导致超过了 `[storage] scheduler-pending-write-threshold = "100MB"` 设置的阈值。TODO：通过查看 MVCC_CONFLICT_COUNTER 对应的 metric 来确认是否属于该情况
+	- 写入冲突严重，`latch wait duration` 比较高，查看监控： grafana -> TiKV-details -> scheduler prewrite 或者 scheduler commit  的 `latch wait duration`。scheduler 写入任务堆积，导致超过了 `[storage] scheduler-pending-write-threshold = "100MB"` 设置的阈值。
 	- 写入慢导致写入堆积，该 TiKV 正在写入的数据超过了 `[storage] scheduler-pending-write-threshold = "100MB"` 设置的阈值。请参考 4.5
 
 - 4.3.3 `"raftstore is busy"`，主要是消息的处理速度没有跟上接收消息的速度。短时间的 `channel full` 不会影响服务，长时间持续出现该错误可能会导致 leader 切换走
