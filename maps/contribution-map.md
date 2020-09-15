@@ -9,10 +9,10 @@
 * [PD Placement driver for TiKV](#pd-placement-driver-for-tikv)
 * [TiKV Clients](#tikv-clients)
 * [Libraries depended by TiKV](#libraries-depended-by-tikv)
-* [Ecosystem Tools: DM Data Migration Platform](#ecosystem-tools-dm-data-migration-platform)
-* [Ecosystem Tools - Binlog : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization](#ecosystem-tools---binlog--a-tool-used-to-collect-and-merge-tidbs-binlog-for-real-time-data-backup-and-synchronization)
-* [Ecosystem Tools - Lightning: A high-speed data import tool for TiDB](#ecosystem-tools---lightning-a-high-speed-data-import-tool-for-tidb)
-* [Ecosystem Tools - BR: A command-line tool for distributed backup and restoration of the TiDB cluster data](#ecosystem-tools---br-a-command-line-tool-for-distributed-backup-and-restoration-of-the-tidb-cluster-data)
+* [Migration Tools - DM Data Migration Platform](#migration-tools-dm-data-migration-platform)
+* [Migration Tools - Binlog : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization](#migration-tools---binlog--a-tool-used-to-collect-and-merge-tidbs-binlog-for-real-time-data-backup-and-synchronization)
+* [Migration Tools - Lightning: A high-speed data import tool for TiDB](#migration-tools---lightning-a-high-speed-data-import-tool-for-tidb)
+* [Migration Tools - BR: A command-line tool for distributed backup and restoration of the TiDB cluster data](#migration-tools---br-a-command-line-tool-for-distributed-backup-and-restoration-of-the-tidb-cluster-data)
 * [TiDB on K8S/Docker : Creates and manages TiDB clusters running in Kubernetes](#tidb-on-k8sdocker--creates-and-manages-tidb-clusters-running-in-kubernetes)
 * [Deployment Tools - tidb-ansible: A tool to capture data change of TiDB cluster](#deployment-tools---tidb-ansible-a-tool-to-capture-data-change-of-tidb-cluster)
 * [Chaos-Mesh: A Chaos Engineering Platform for Kubernetes](#chaos-mesh-a-chaos-engineering-platform-for-kubernetes)
@@ -89,7 +89,7 @@ Contribution tutorial:
 | [rust-rocksdb](https://github.com/tikv/rust-rocksdb) | Rust wrapper for RocksDB | | Rust, C++, RocksDB | <li>[Rust ffi](https://doc.rust-lang.org/nomicon/ffi.html)<li>[Rust bindgen](https://rust-lang.github.io/rust-bindgen/)<li>[RocksDB wiki](https://github.com/facebook/rocksdb/wiki) |  | Migrate bindgen to C++ |
 | [Titan](https://github.com/tikv/titan) | A RocksDB plugin for key-value separation | | C++, LSM-tree, RocksDB| <li>[Titan storage design and implementation](https://pingcap.com/blog/titan-storage-engine-design-and-implementation/)<li>[WiscKey: Separating Keys from Values in SSD-conscious Storage](https://www.usenix.org/system/files/conference/fast16/fast16-papers-lu.pdf) | | |
 
-## Ecosystem Tools: [DM](https://github.com/pingcap/dm) Data Migration Platform
+## Migration Tools - [DM](https://github.com/pingcap/dm) Data Migration Platform
 
 | *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
@@ -105,7 +105,7 @@ Contribution tutorial:
 | DM-ansible | The ansible playbook for DM | [dm-ansible](https://github.com/pingcap/dm/tree/master/dm/dm-ansible) | DM, Ansible | Ditto | Ditto | |
 | DM-tracer | A DM-specific tracer framework | [dm-tracer](https://github.com/pingcap/dm/tree/master/dm/tracer)| Golang, gRPC, Protobuf | Ditto | Ditto | |
 
-## Ecosystem Tools - [Binlog](https://github.com/pingcap/tidb-binlog) : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization
+## Migration Tools - [Binlog](https://github.com/pingcap/tidb-binlog) : A tool used to collect and merge tidb's binlog for real-time data backup and synchronization
 
 | *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
@@ -113,7 +113,7 @@ Contribution tutorial:
 | Pump | Receive and store Binlogs, sorted by commitTS | [pump](https://github.com/pingcap/tidb-binlog/tree/master/pump) | Golang, LevelDB, etcd, gRPC | Ditto | Ditto | |
 | Drainer | Pull Binlog from Pump, do merge and sort, and then sync to downstream | [drainer](https://github.com/pingcap/tidb-binlog/tree/master/drainer) | Golang, Mysql, Kafka, gRPC | Ditto | Ditto | |
 
-## Ecosystem Tools - [Lightning](https://github.com/pingcap/tidb-lightning): A high-speed data import tool for TiDB
+## Migration Tools - [Lightning](https://github.com/pingcap/tidb-lightning): A high-speed data import tool for TiDB
 
 | *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
@@ -129,7 +129,7 @@ Contribution tutorial:
 | Utilities | | [common](https://github.com/pingcap/tidb-lightning/tree/master/lightning/common) | | | | |
 | Importer | | [import](https://github.com/tikv/importer/tree/master/src/import) | | | | |
 
-## Ecosystem Tools - [BR](https://github.com/pingcap/br): A command-line tool for distributed backup and restoration of the TiDB cluster data
+## Migration Tools - [BR](https://github.com/pingcap/br): A command-line tool for distributed backup and restoration of the TiDB cluster data
 
 | *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
@@ -187,7 +187,7 @@ Contribution tutorial:
 | Planner(TiDB) | Focuses on the development and maintenance of the TiDB [planner](https://pingcap.com/docs/stable/reference/performance/sql-optimizer-overview/) and [statistics](https://pingcap.com/docs/stable/reference/performance/statistics/) components， make TiDB planner more smart and more accurate. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-planner) | channel: [sig-planner](https://slack.tidb.io/invite?team=tidb-community&channel=sig-planner&ref=tidb-map) |
 | Scheduling(TiDB) | Focuses on the distributed scheduling system in TiDB. Work includes improving the existing scheduling system and developing a new scheduling system. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-scheduling) | channel: [sig-scheduling](https://slack.tidb.io/invite?team=tidb-community&channel=sig-scheduling&ref=tidb-map) |
 | K8S(TiDB) | Supports TiDB Products on Kubernetes and Docker. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-k8s) | channel: [k8s](https://slack.tidb.io/invite?team=tidb-community&channel=sig-k8s&ref=github-sig) |
-| Tools(TiDB) | Improves TiDB surrounding tools, like tidb-lightning, tidb-binlog and so on. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-tools) | channel: [sig-tools](https://slack.tidb.io/invite?team=tidb-community&channel=sig-tools&ref=tidb-map) |
+| Migrate(TiDB) | Improves TiDB surrounding data migration services, like tidb-lightning, tidb-binlog and so on. [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-migrate) | channel: [sig-migrate](https://slack.tidb.io/invite?team=tidb-community&channel=sig-migrate&ref=tidb-map) |
 | Dashboard(TiDB) | Focuses on the development of the [TiDB Dashboard](https://github.com/pingcap-incubator/tidb-dashboard). [Readme](https://github.com/pingcap/community/tree/master/special-interest-groups/sig-dashboard) | channel: [sig-dashboard](https://slack.tidb.io/invite?team=tidb-community&channel=sig-dashboard&ref=tidb-map)|
 | Engine(TiKV) | Build a fast, reliable storage engine. Works included in repo [RocksDB](https://github.com/facebook/rocksdb), [Titan](https://github.com/tikv/titan), and [rust-rocksdb](https://github.com/tikv/rust-rocksdb), and etc. [Readme](https://github.com/tikv/community/blob/master/sig/engine/README.md) | channel: [sig-engine](https://slack.tidb.io/invite?team=tikv-wg&channel=sig-engine&ref=github-sig) |
 | Coprocessor(TiKV) | TiKV Coprocessor is the computing component for TiDB's pushdown requests. [Readme](https://github.com/tikv/community/blob/master/sig/coprocessor/README.md) | channel: [sig-copr](https://slack.tidb.io/invite?team=tikv-wg&channel=sig-copr&ref=github-sig)|
