@@ -177,6 +177,8 @@ Contribution tutorial:
 
 ## TiDB Developer Group
 
-* Join [TiDB Internals Forum](https://internals.tidb.io/)
-* Join [TiDB Slack Channel](https://join.slack.com/t/tidbcommunity/shared_invite/enQtNzc0MzI4ODExMDc4LWYwYmIzMjZkYzJiNDUxMmZlN2FiMGJkZjAyMzQ5NGU0NGY0NzI3NTYwMjAyNGQ1N2I2ZjAxNzc1OGUwYWM0NzE)
-* Join [TiKV Slack Channel](https://join.slack.com/t/tikv-wg/shared_invite/enQtNTUyODE4ODU2MzI0LWVlMWMzMDkyNWE5ZjY1ODAzWYZWYZWYWJGWZGWYG)
+| *Channel*                                                                                                                                                                              | *Description*                                                                                                                       |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [TiDB Internals Forum](https://internals.tidb.io/)                                                                                                                                     | This is the hub for discussing everything related to the implementation and design of TiDB, TiKV and other TiDB ecosystem projects. |
+| [TiDB Slack Channel](https://join.slack.com/t/tidbcommunity/shared_invite/enQtNzc0MzI4ODExMDc4LWYwYmIzMjZkYzJiNDUxMmZlN2FiMGJkZjAyMzQ5NGU0NGY0NzI3NTYwMjAyNGQ1N2I2ZjAxNzc1OGUwYWM0NzE) | The official Slack channel of the TiDB community.                                                                                   |
+| [TiKV Slack Channel](https://join.slack.com/t/tikv-wg/shared_invite/enQtNTUyODE4ODU2MzI0LWVlMWMzMDkyNWE5ZjY1ODAzWYZWYZWYWJGWZGWYG)                                                     | The official Slack channel of the TiKV community.                                                                                   |
