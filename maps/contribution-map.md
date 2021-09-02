@@ -144,7 +144,7 @@ Contribution tutorial:
 | Advanced StatefulSet | This is an Advanced StatefulSet CRD implementation based on official StatefulSet in Kubernetes. In addition to the official StatefulSet, it can scale the set in an arbitrary way. | [advanced-statefulset](https://github.com/pingcap/advanced-statefulset) | Golang, Kubernetes | Kubernetes [Concepts](https://kubernetes.io/docs/concepts/), Kubernetes [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/), Kubernetes StatefulSet [Implementations](https://github.com/kubernetes/kubernetes/tree/master/pkg/controller/statefulset), PingCAP StatefulSet [Implementations](https://github.com/pingcap/advanced-statefulset/tree/master/pkg/controller/statefulset) | | |
 | TiDB Docker Compose | Docker compose files for TiDB. With it, you can quickly deploy a TiDB testing cluster with a single command. | [tidb-docker-compose](https://github.com/pingcap/tidb-docker-compose)| Docker, Docker Compose | how to [start tidb with tidb-docker-compose](https://pingcap.com/docs/stable/how-to/deploy/orchestrated/docker/), docker [get started](https://docs.docker.com/get-started/),  docker [compose](https://docs.docker.com/compose/)| | |
 
-## Deployment Tools - [tidb-ansible](https://github.com/pingcap/tidb-ansible): A tool to capture data change of TiDB cluster
+## Deployment Tools - [tidb-ansible](https://github.com/pingcap/tidb-ansible): A TiDB cluster deployment tool based on Ansible playbook. 
 
 | *Module* | *Description* | *Code Directory* | *Required Skills* | *Learning Materials* | *What I can Contribute* | *Contributing Tutorials* |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
